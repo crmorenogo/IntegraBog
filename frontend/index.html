@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IntegraBog · Sugerencia de nuevas troncales</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="panel">
+    <h1>IntegraBog</h1>
+    <p class="subtitulo">Diagnóstico de la red de TransMilenio y sugerencia de nuevas troncales</p>
+
+    <div class="bloque">
+      <h2>Sugerir troncal entre dos estaciones</h2>
+      <label for="origen">Estación origen</label>
+      <select id="origen"></select>
+      <label for="destino">Estación destino</label>
+      <select id="destino"></select>
+      <button id="btn-sugerir">Calcular sugerencia</button>
+    </div>
+
+    <div class="bloque">
+      <h2>Pares críticos automáticos</h2>
+      <p class="ayuda">Encuentra las estaciones geométricamente cercanas pero hoy desconectadas entre corredores.</p>
+      <label for="top-n">Cuántos pares (top N)</label>
+      <input type="number" id="top-n" value="5" min="1" max="20">
+      <button id="btn-pares">Buscar pares críticos</button>
+    </div>
+
+    <div id="resultado" class="bloque oculto">
+      <h2>Resultado</h2>
+      <div id="resultado-contenido"></div>
+    </div>
+
+    <div id="estado" class="estado"></div>
+  </div>
+
+  <div id="mapa"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
