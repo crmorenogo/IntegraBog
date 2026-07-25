@@ -1,0 +1,162 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #1a1a2e;
+}
+
+body {
+  display: flex;
+}
+
+#panel {
+  width: 340px;
+  min-width: 340px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+#mapa {
+  flex: 1;
+  height: 100%;
+}
+
+h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.4rem;
+  color: #f8fafc;
+}
+
+.subtitulo {
+  margin: 0 0 20px 0;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.bloque {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.bloque h2 {
+  font-size: 0.95rem;
+  margin: 0 0 10px 0;
+  color: #f8fafc;
+}
+
+.ayuda {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin: 0 0 10px 0;
+}
+
+label {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+select, input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+}
+
+button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #22c55e;
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button:hover {
+  background: #16a34a;
+}
+
+button:disabled {
+  background: #475569;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.oculto {
+  display: none;
+}
+
+.estado {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 10px;
+  min-height: 1.2em;
+}
+
+.estado.error {
+  color: #f87171;
+}
+
+.tarjeta-resultado {
+  background: #0f172a;
+  border-left: 3px solid #22c55e;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.tarjeta-resultado .titulo {
+  font-weight: 600;
+  color: #f8fafc;
+  margin-bottom: 4px;
+}
+
+.tarjeta-resultado .ahorro-positivo {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.tarjeta-resultado .ahorro-nulo {
+  color: #fbbf24;
+}
+
+.leyenda {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+.leyenda span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.leyenda .linea {
+  width: 16px;
+  height: 3px;
+  display: inline-block;
+}
