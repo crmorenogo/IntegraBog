@@ -3,6 +3,7 @@ Configuración central del proyecto IntegraBog.
 Aquí viven las rutas y constantes que usan los demás módulos, para no
 tener valores sueltos ("magic values") dentro de la lógica de negocio.
 """
+
 from pathlib import Path
 
 RAIZ_PROYECTO = Path(__file__).resolve().parents[2]
@@ -20,8 +21,6 @@ TOLERANCIA_ACOPLE_M = 300.0
 # Los GeoJSON originales vienen en CRS84 (grados) — no sirve para
 # calcular distancias euclidianas correctamente. Ver Paso 2.
 CRS_METRICO = "EPSG:3116"
-
-
 
 
 # --- CONFIGURACIÓN FASE 2: OSMNX ---

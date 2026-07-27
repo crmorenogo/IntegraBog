@@ -1,6 +1,7 @@
 """
 Construcción de nodos y aristas del grafo de estaciones troncales.
 """
+
 import geopandas as gpd
 import networkx as nx
 import pandas as pd
@@ -19,6 +20,7 @@ def construir_nodos(G: nx.DiGraph, estaciones: gpd.GeoDataFrame) -> None:
             y=est.geometry.y,
         )
 
+
 def construir_aristas(G: nx.DiGraph, acoples: pd.DataFrame) -> None:
     """Ordena las estaciones acopladas a cada tramo por su posición de
     arco 's' y conecta cada par de estaciones consecutivas.
@@ -32,7 +34,17 @@ def construir_aristas(G: nx.DiGraph, acoples: pd.DataFrame) -> None:
         for i in range(len(grupo) - 1):
             a, b = grupo.loc[i], grupo.loc[i + 1]
             peso = round(b["s"] - a["s"], 2)
-            G.add_edge(a["cod_nodo"], b["cod_nodo"], weight=peso,
-                       id_trazado=a["id_trazado"], nom_tronc=a["nom_tronc"])
-            G.add_edge(b["cod_nodo"], a["cod_nodo"], weight=peso,
-                       id_trazado=a["id_trazado"], nom_tronc=a["nom_tronc"])
+            G.add_edge(
+                a["cod_nodo"],
+                b["cod_nodo"],
+                weight=peso,
+                id_trazado=a["id_trazado"],
+                nom_tronc=a["nom_tronc"],
+            )
+            G.add_edge(
+                b["cod_nodo"],
+                a["cod_nodo"],
+                weight=peso,
+                id_trazado=a["id_trazado"],
+                nom_tronc=a["nom_tronc"],
+            )

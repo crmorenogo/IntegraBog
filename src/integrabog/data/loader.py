@@ -2,6 +2,7 @@
 Carga de las fuentes geoespaciales crudas y su reproyección a un
 sistema de coordenadas métrico.
 """
+
 import geopandas as gpd
 
 from integrabog.config import CRS_METRICO, RUTA_ESTACIONES, RUTA_TRAZADO

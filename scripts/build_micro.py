@@ -1,6 +1,7 @@
 """
 Script para descargar, construir y validar el grafo de la malla vial (Grafo Micro).
 """
+
 from integrabog.graph.micro import obtener_malla_vial
 
 

@@ -3,6 +3,7 @@ Motor de sugerencia de infraestructura (Fase 4): compara el tiempo actual
 por la red troncal existente contra el tiempo de una ruta nueva propuesta
 sobre la malla vial, penalizada según la jerarquía de cada calle.
 """
+
 import networkx as nx
 from pyproj import Transformer
 
@@ -11,12 +12,19 @@ VELOCIDAD_CAMINATA_KMH = 4.5
 ESPACIADO_ESTACIONES_M = 500.0
 
 PENALIZACION_VIAL = {
-    "motorway": 1.0, "motorway_link": 1.0,
-    "trunk": 1.0, "trunk_link": 1.0,
-    "primary": 1.15, "primary_link": 1.15,
-    "secondary": 1.6, "secondary_link": 1.6,
-    "tertiary": 3.0, "tertiary_link": 3.0,
-    "residential": 10.0, "living_street": 10.0, "unclassified": 10.0,
+    "motorway": 1.0,
+    "motorway_link": 1.0,
+    "trunk": 1.0,
+    "trunk_link": 1.0,
+    "primary": 1.15,
+    "primary_link": 1.15,
+    "secondary": 1.6,
+    "secondary_link": 1.6,
+    "tertiary": 3.0,
+    "tertiary_link": 3.0,
+    "residential": 10.0,
+    "living_street": 10.0,
+    "unclassified": 10.0,
 }
 PENALIZACION_DEFECTO = 10.0
 
@@ -35,7 +43,8 @@ def _resolver_estacion(G_multicapa: nx.MultiDiGraph, identificador: str) -> str:
     if id_macro in G_multicapa.nodes:
         return id_macro
     coincidencias = [
-        n for n, d in G_multicapa.nodes(data=True)
+        n
+        for n, d in G_multicapa.nodes(data=True)
         if d.get("layer") == "macro" and identificador.lower() in d.get("nombre", "").lower()
     ]
     if len(coincidencias) == 1:
@@ -89,8 +98,9 @@ def _peso_tiempo(u, v, datos_multi):
     return (arista["weight"] / 1000) / VELOCIDAD_BRT_KMH * 60
 
 
-def _estaciones_intermedias(G_multicapa: nx.MultiDiGraph, camino: list,
-                              espaciado_min_m: float = ESPACIADO_ESTACIONES_M) -> list:
+def _estaciones_intermedias(
+    G_multicapa: nx.MultiDiGraph, camino: list, espaciado_min_m: float = ESPACIADO_ESTACIONES_M
+) -> list:
     paradas = [camino[0]]
     acumulado = 0.0
     for i in range(len(camino) - 1):
@@ -134,8 +144,11 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
     }
 
     # 1. Línea base: solo la red troncal existente
-    aristas_macro = [(u, v, k) for u, v, k, d in G_multicapa.edges(keys=True, data=True)
-                      if d.get("layer") == "macro"]
+    aristas_macro = [
+        (u, v, k)
+        for u, v, k, d in G_multicapa.edges(keys=True, data=True)
+        if d.get("layer") == "macro"
+    ]
     G_macro = G_multicapa.edge_subgraph(aristas_macro)
     try:
         camino_actual = nx.shortest_path(G_macro, id_origen, id_destino, weight=_peso_tiempo)
@@ -148,9 +161,13 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
 
     # 2 y 3. Ruta propuesta: solo malla vial + las 2 transferencias relevantes
     aristas_ruta = [
-        (u, v, k) for u, v, k, d in G_multicapa.edges(keys=True, data=True)
+        (u, v, k)
+        for u, v, k, d in G_multicapa.edges(keys=True, data=True)
         if d.get("layer") == "micro"
-        or (d.get("layer") == "transferencia" and (u in (id_origen, id_destino) or v in (id_origen, id_destino)))
+        or (
+            d.get("layer") == "transferencia"
+            and (u in (id_origen, id_destino) or v in (id_origen, id_destino))
+        )
     ]
     G_ruta = G_multicapa.edge_subgraph(aristas_ruta)
     camino = nx.shortest_path(G_ruta, id_origen, id_destino, weight=_peso_tiempo)
@@ -175,8 +192,11 @@ def identificar_pares_criticos(G_multicapa: nx.MultiDiGraph, top_n: int = 5) -> 
     físicamente cerca pero desconectadas en la red actual. Devuelve el
     resultado completo de sugerir_nueva_troncal para los 'top_n' pares
     más cercanos, más su distancia geométrica en línea recta."""
-    aristas_macro = [(u, v, k) for u, v, k, d in G_multicapa.edges(keys=True, data=True)
-                      if d.get("layer") == "macro"]
+    aristas_macro = [
+        (u, v, k)
+        for u, v, k, d in G_multicapa.edges(keys=True, data=True)
+        if d.get("layer") == "macro"
+    ]
     G_macro = G_multicapa.edge_subgraph(aristas_macro)
     componentes = list(nx.weakly_connected_components(G_macro))
 

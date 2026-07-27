@@ -2,6 +2,7 @@
 Lógica de acople (snapping) espacial: para cada estación, encuentra el
 tramo de trazado geométricamente más cercano y su posición de arco.
 """
+
 import geopandas as gpd
 import pandas as pd
 
@@ -15,6 +16,7 @@ def explotar_tramos(trazado: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     tramos = trazado.explode(index_parts=False).reset_index(drop=True)
     tramos["tramo_id"] = tramos.index
     return tramos
+
 
 def acoplar_estaciones(
     estaciones: gpd.GeoDataFrame,
@@ -32,18 +34,19 @@ def acoplar_estaciones(
         dist_min = distancias.loc[idx_cercano]
 
         if dist_min > tolerancia_m:
-            print(f"[ADVERTENCIA] '{est['nom_est']}' no se acopló "
-                  f"({dist_min:.1f} m > tolerancia)")
+            print(f"[ADVERTENCIA] '{est['nom_est']}' no se acopló ({dist_min:.1f} m > tolerancia)")
             continue
 
         tramo = tramos.loc[idx_cercano]
         s = tramo.geometry.project(punto)
-        filas.append({
-            "cod_nodo": int(est["cod_nodo"]),
-            "tramo_id": int(tramo["tramo_id"]),
-            "id_trazado": tramo["id_trazado"],
-            "nom_tronc": tramo["nom_tronc"],
-            "s": float(s),
-            "dist_acople": float(dist_min),
-        })
+        filas.append(
+            {
+                "cod_nodo": int(est["cod_nodo"]),
+                "tramo_id": int(tramo["tramo_id"]),
+                "id_trazado": tramo["id_trazado"],
+                "nom_tronc": tramo["nom_tronc"],
+                "s": float(s),
+                "dist_acople": float(dist_min),
+            }
+        )
     return pd.DataFrame(filas)

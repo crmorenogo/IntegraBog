@@ -3,6 +3,7 @@ Diagnóstico: ¿por qué Escuela Militar <-> San Martín da 17.5 min para
 apenas 306 m en línea recta? Mide la ruta real, tramo por tramo, para
 descartar un error de código antes de aceptarlo como limitación.
 """
+
 import networkx as nx
 
 from integrabog.graph.macro import construir_grafo_macro
@@ -26,9 +27,12 @@ def main():
     origen, destino = "macro_4107", "macro_3014"  # Escuela Militar, San Martin
 
     aristas_ruta = [
-        (u, v, k) for u, v, k, d in G_multicapa.edges(keys=True, data=True)
+        (u, v, k)
+        for u, v, k, d in G_multicapa.edges(keys=True, data=True)
         if d.get("layer") == "micro"
-        or (d.get("layer") == "transferencia" and (u in (origen, destino) or v in (origen, destino)))
+        or (
+            d.get("layer") == "transferencia" and (u in (origen, destino) or v in (origen, destino))
+        )
     ]
     G_ruta = G_multicapa.edge_subgraph(aristas_ruta)
     camino = nx.shortest_path(G_ruta, origen, destino, weight=_peso_tiempo)
@@ -46,11 +50,13 @@ def main():
             tipo = arista.get("layer")
         por_tipo[tipo] = por_tipo.get(tipo, 0.0) + largo
 
-    print(f"\nDistancia real de la ruta: {distancia_real_m:.0f} m  (vs 306 m en línea recta -> {distancia_real_m/306:.1f}x)")
+    print(
+        f"\nDistancia real de la ruta: {distancia_real_m:.0f} m  (vs 306 m en línea recta -> {distancia_real_m / 306:.1f}x)"
+    )
     print(f"Nodos en el camino: {len(camino)}")
     print("Distancia por tipo de vía:")
     for tipo, m in sorted(por_tipo.items(), key=lambda x: -x[1]):
-        print(f"  {tipo}: {m:.0f} m ({m/distancia_real_m*100:.0f}%)")
+        print(f"  {tipo}: {m:.0f} m ({m / distancia_real_m * 100:.0f}%)")
 
     for nodo, nombre in [(origen, "Escuela Militar"), (destino, "San Martín")]:
         d = G_multicapa.nodes[nodo]

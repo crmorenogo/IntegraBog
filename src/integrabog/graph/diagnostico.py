@@ -2,6 +2,7 @@
 Diagnóstico genérico de un grafo: tamaño, conexidad y nodos aislados.
 Sirve igual para el grafo macro solo que para el multicapa completo.
 """
+
 import networkx as nx
 
 

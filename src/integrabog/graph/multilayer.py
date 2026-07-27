@@ -3,6 +3,7 @@ Fusión de los grafos Macro (estaciones TransMilenio) y Micro (malla vial)
 en un único grafo multicapa, con aristas de transferencia peatonal entre
 cada estación y su intersección vial más cercana.
 """
+
 import networkx as nx
 import osmnx as ox
 

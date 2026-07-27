@@ -1,12 +1,15 @@
 """Tests de integración para la API REST (FastAPI TestClient)."""
+
 import pytest
-from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="module")
 def client():
     """Levanta una instancia de la API con el grafo multicapa real."""
+    from fastapi.testclient import TestClient
+
     from integrabog.api.main import app
+
     with TestClient(app) as c:
         yield c
 

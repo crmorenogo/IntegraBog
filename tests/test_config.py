@@ -1,4 +1,5 @@
 """Tests para los módulos de config y constantes."""
+
 from integrabog.config import (
     CRS_METRICO,
     RAIZ_PROYECTO,

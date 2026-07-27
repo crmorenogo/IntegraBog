@@ -4,6 +4,7 @@ Rutas HTTP de la API de IntegraBog.
 Todas las rutas leen el grafo multicapa desde `request.app.state.grafo`
 (ver state.py y main.py) -- nunca lo reconstruyen, solo lo consultan.
 """
+
 from collections import Counter
 
 import networkx as nx
@@ -103,8 +104,10 @@ def red_actual(request: Request):
         lon_v, lat_v = _a_lonlat(dv["x"], dv["y"])
         aristas.append(
             AristaRedActualOut(
-                origen_lon=lon_u, origen_lat=lat_u,
-                destino_lon=lon_v, destino_lat=lat_v,
+                origen_lon=lon_u,
+                origen_lat=lat_u,
+                destino_lon=lon_v,
+                destino_lat=lat_v,
                 nom_tronc=datos.get("nom_tronc"),
             )
         )

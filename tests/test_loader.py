@@ -32,6 +32,7 @@ class TestCargaGeoespacial:
     @pytest.mark.slow
     def test_cargar_estaciones_devuelve_geodataframe(self):
         from integrabog.data.loader import cargar_estaciones
+
         gdf = cargar_estaciones()
         assert not gdf.empty
         assert "geometry" in gdf.columns
@@ -40,6 +41,7 @@ class TestCargaGeoespacial:
     @pytest.mark.slow
     def test_cargar_trazado_devuelve_geodataframe(self):
         from integrabog.data.loader import cargar_trazado
+
         gdf = cargar_trazado()
         assert not gdf.empty
         assert "geometry" in gdf.columns
@@ -47,5 +49,6 @@ class TestCargaGeoespacial:
     @pytest.mark.slow
     def test_reproyeccion_crs_metrico(self):
         from integrabog.data.loader import cargar_estaciones
+
         gdf = cargar_estaciones()
         assert str(gdf.crs).startswith("EPSG:3116")

@@ -2,6 +2,7 @@
 Construcción del grafo macro completo (estaciones + aristas + costura)
 a partir de los datos crudos de TransMilenio.
 """
+
 import networkx as nx
 
 from integrabog.data.loader import cargar_estaciones, cargar_trazado

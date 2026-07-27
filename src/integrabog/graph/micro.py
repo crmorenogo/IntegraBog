@@ -2,6 +2,7 @@
 Módulo para la extracción y procesamiento del Grafo Micro (Malla Vial)
 utilizando OpenStreetMap (OSMnx).
 """
+
 import networkx as nx
 import osmnx as ox
 
@@ -57,20 +58,25 @@ def obtener_malla_vial(
 
     print(f"Consolidando intersecciones (radio {tolerancia} m)...")
     G_consolidado = ox.consolidate_intersections(
-        G_proyectado, tolerance=tolerancia,
+        G_proyectado,
+        tolerance=tolerancia,
         rebuild_graph=True,
         dead_ends=CONSERVAR_VIAS_SIN_SALIDA,  # política explícita, ver config.py
         reconnect_edges=True,
     )
     nodos_despues = G_consolidado.number_of_nodes()
-    print(f"Nodos: {nodos_antes} -> {nodos_despues} "
-          f"({(1 - nodos_despues / nodos_antes) * 100:.1f}% fusionado)")
+    print(
+        f"Nodos: {nodos_antes} -> {nodos_despues} "
+        f"({(1 - nodos_despues / nodos_antes) * 100:.1f}% fusionado)"
+    )
 
     componentes = sorted(nx.strongly_connected_components(G_consolidado), key=len, reverse=True)
     print(f"Componentes fuertemente conexas: {len(componentes)}")
     print(f"Tamaños (top 10): {[len(c) for c in componentes[:10]]}")
-    print(f"El componente más grande retiene {len(componentes[0])}/{nodos_despues} nodos "
-          f"({len(componentes[0]) / nodos_despues * 100:.1f}%)")
+    print(
+        f"El componente más grande retiene {len(componentes[0])}/{nodos_despues} nodos "
+        f"({len(componentes[0]) / nodos_despues * 100:.1f}%)"
+    )
 
     G_final = G_consolidado.subgraph(componentes[0]).copy()
 
