@@ -1,3 +1,13 @@
+"""
+Corre identificar_pares_criticos() sobre el grafo real completo y
+muestra los candidatos, uno por línea -- es la validación rápida de que
+la búsqueda automática de pares críticos funciona de punta a punta
+contra la malla vial real, no contra datos sintéticos de prueba.
+
+No está envuelto en una función main() ni en un if __name__ == "__main__"
+a propósito: es un script de un solo uso, pensado para correrse directo
+y leer la salida en consola, no para importarse desde otro lado.
+"""
 from integrabog.graph.macro import construir_grafo_macro
 from integrabog.graph.micro import obtener_malla_vial
 from integrabog.graph.multilayer import construir_grafo_multicapa
@@ -6,7 +16,7 @@ from integrabog.routing.network_design import calcular_costo_brt, identificar_pa
 G_macro = construir_grafo_macro()
 G_micro = obtener_malla_vial()
 G_multicapa = construir_grafo_multicapa(G_macro, G_micro)
-calcular_costo_brt(G_multicapa)
+calcular_costo_brt(G_multicapa) # necesario antes de identificar_pares_criticos -- si no, sugerir_nueva_troncal truena buscando 'tiempo_brt_min' sin anotar
 
 for r in identificar_pares_criticos(G_multicapa, top_n=5):
     print(f"{r['estacion_origen']} <-> {r['estacion_destino']}: "
