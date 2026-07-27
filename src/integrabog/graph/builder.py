@@ -1,9 +1,9 @@
 """
 Construcción de nodos y aristas del grafo de estaciones troncales.
 """
+import geopandas as gpd
 import networkx as nx
 import pandas as pd
-import geopandas as gpd
 
 
 def construir_nodos(G: nx.DiGraph, estaciones: gpd.GeoDataFrame) -> None:

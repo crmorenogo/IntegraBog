@@ -5,10 +5,12 @@ los combina, y reporta estadísticas de validación.
 """
 from collections import Counter
 
+import numpy as np
+
+from integrabog.graph.diagnostico import diagnosticar_grafo
 from integrabog.graph.macro import construir_grafo_macro
 from integrabog.graph.micro import obtener_malla_vial
 from integrabog.graph.multilayer import construir_grafo_multicapa
-from integrabog.graph.diagnostico import diagnosticar_grafo
 
 
 def main():
@@ -28,7 +30,6 @@ def main():
     print(f"Aristas por capa: {dict(conteo_capas)}")
 
     print("\n--- DIAGNÓSTICO COMPARATIVO SOACHA (ANTES VS AHORA) ---")
-    import numpy as np
 
     pesos = [d["weight"] for u, v, d in G_multicapa.edges(data=True)
              if d.get("layer") == "transferencia" and str(u).startswith("macro_")]
@@ -40,7 +41,7 @@ def main():
              "León XIII": 699.3, "La Despensa": 316.2, "Portal Américas": 188.4}
 
     print("\nLas 5 que estaban mal antes de incluir Soacha, antes vs ahora:")
-    for u, v, d in G_multicapa.edges(data=True):
+    for u, _v, d in G_multicapa.edges(data=True):
         if d.get("layer") != "transferencia" or not str(u).startswith("macro_"):
             continue
         nombre = G_multicapa.nodes[u].get("nombre", "")

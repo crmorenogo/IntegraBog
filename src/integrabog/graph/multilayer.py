@@ -30,12 +30,12 @@ def construir_grafo_multicapa(G_macro: nx.DiGraph, G_micro: nx.MultiDiGraph) -> 
 
     # snapping vectorizado: todas las estaciones contra el grafo vial en una sola llamada
     estaciones = [(n, d["x"], d["y"]) for n, d in G_macro_capa.nodes(data=True)]
-    ids_estacion, xs, ys = zip(*estaciones)
+    ids_estacion, xs, ys = zip(*estaciones, strict=False)
     nodos_viales, distancias = ox.distance.nearest_nodes(
         G_micro_capa, X=list(xs), Y=list(ys), return_dist=True
     )
 
-    for id_estacion, id_vial, dist in zip(ids_estacion, nodos_viales, distancias):
+    for id_estacion, id_vial, dist in zip(ids_estacion, nodos_viales, distancias, strict=False):
         peso = round(float(dist), 2)
         G_multicapa.add_edge(id_estacion, id_vial, weight=peso, layer="transferencia")
         G_multicapa.add_edge(id_vial, id_estacion, weight=peso, layer="transferencia")

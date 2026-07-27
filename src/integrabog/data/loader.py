@@ -4,7 +4,7 @@ sistema de coordenadas métrico.
 """
 import geopandas as gpd
 
-from src.integrabog.config import RUTA_ESTACIONES, RUTA_TRAZADO, CRS_METRICO
+from integrabog.config import CRS_METRICO, RUTA_ESTACIONES, RUTA_TRAZADO
 
 
 def cargar_estaciones() -> gpd.GeoDataFrame:

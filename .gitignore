@@ -1,10 +1,35 @@
-.venv/
+# --- Python ---
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
 
+# --- Virtual environments ---
+.venv/
+.venv*/
+venv/
+env/
+
+# --- IDE ---
 .idea/
+*.iml
+.vscode/
+*.swp
+*.swo
 
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Project-specific ---
 cache/
 data/processed/*.graphml
-
 .env
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage

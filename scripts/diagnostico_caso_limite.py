@@ -8,7 +8,12 @@ import networkx as nx
 from integrabog.graph.macro import construir_grafo_macro
 from integrabog.graph.micro import obtener_malla_vial
 from integrabog.graph.multilayer import construir_grafo_multicapa
-from integrabog.routing.network_design import calcular_costo_brt, _peso_tiempo, _mejor_arista, _TRANSFORMADOR
+from integrabog.routing.network_design import (
+    _TRANSFORMADOR,
+    _mejor_arista,
+    _peso_tiempo,
+    calcular_costo_brt,
+)
 
 
 def main():

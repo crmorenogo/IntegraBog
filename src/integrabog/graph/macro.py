@@ -5,9 +5,9 @@ a partir de los datos crudos de TransMilenio.
 import networkx as nx
 
 from integrabog.data.loader import cargar_estaciones, cargar_trazado
-from integrabog.graph.snapping import explotar_tramos, acoplar_estaciones
-from integrabog.graph.builder import construir_nodos, construir_aristas
+from integrabog.graph.builder import construir_aristas, construir_nodos
 from integrabog.graph.costura import calcular_aristas_costura
+from integrabog.graph.snapping import acoplar_estaciones, explotar_tramos
 
 
 def construir_grafo_macro() -> nx.DiGraph:

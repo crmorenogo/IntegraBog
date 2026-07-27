@@ -124,12 +124,12 @@ def sugerir(
     try:
         resultado = sugerir_nueva_troncal(G, origen, destino)
     except EstacionNoEncontradaError as err:
-        raise HTTPException(status_code=404, detail=str(err))
+        raise HTTPException(status_code=404, detail=str(err)) from err
     except (nx.NetworkXNoPath, nx.NodeNotFound) as err:
         raise HTTPException(
             status_code=422,
             detail=f"No fue posible calcular una ruta nueva entre esas estaciones: {err}",
-        )
+        ) from err
     return _resultado_a_schema(resultado, G)
 
 

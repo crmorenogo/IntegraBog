@@ -6,11 +6,11 @@ import networkx as nx
 import osmnx as ox
 
 from integrabog.config import (
+    CONSERVAR_VIAS_SIN_SALIDA,
     CRS_METRICO,
     RUTA_GRAFO_BASE,
     RUTA_GRAFO_MICRO,
     TOLERANCIA_CONSOLIDACION_M,
-    CONSERVAR_VIAS_SIN_SALIDA,
 )
 
 
@@ -41,7 +41,7 @@ def _ruta_cache_micro(tolerancia: float):
 
 
 def obtener_malla_vial(
-    lugar: str | list[str] = ["Bogotá, Colombia", "Soacha, Colombia"],
+    lugar: str | list[str] | None = None,
     forzar_descarga: bool = False,
     tolerancia: float = TOLERANCIA_CONSOLIDACION_M,
 ) -> nx.MultiDiGraph:
@@ -50,6 +50,8 @@ def obtener_malla_vial(
         print(f"Cargando grafo micro (tolerancia={tolerancia}) desde caché: {ruta_cache}")
         return ox.load_graphml(ruta_cache)
 
+    if lugar is None:
+        lugar = ["Bogotá, Colombia", "Soacha, Colombia"]
     G_proyectado = _obtener_grafo_base(lugar, forzar_descarga)
     nodos_antes = G_proyectado.number_of_nodes()
 
