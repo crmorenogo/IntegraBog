@@ -69,7 +69,7 @@ def calcular_costo_brt(G_multicapa: nx.MultiDiGraph) -> None:
         datos["tiempo_brt_min"] = (largo_m / 1000) / VELOCIDAD_BRT_KMH * 60 * factor
 
 
-def _mejor_arista(datos_multi: dict) -> dict:
+def _mejor_arista(datos_multi: dict) -> dict | None:
     mejor, mejor_tiempo = None, float("inf")
     for d in datos_multi.values():
         capa = d.get("layer")
@@ -106,6 +106,8 @@ def _estaciones_intermedias(
     for i in range(len(camino) - 1):
         u, v = camino[i], camino[i + 1]
         arista = _mejor_arista(G_multicapa.get_edge_data(u, v))
+        if arista is None:
+            continue
         largo_m = arista.get("length", arista.get("weight", 0.0))
         acumulado += largo_m
         if acumulado >= espaciado_min_m and v != camino[-1]:
@@ -211,7 +213,8 @@ def identificar_pares_criticos(G_multicapa: nx.MultiDiGraph, top_n: int = 5) -> 
                     d = ((xa - xb) ** 2 + (ya - yb) ** 2) ** 0.5
                     if d < mejor_dist:
                         mejor_dist, mejor_par = d, (a, b)
-            candidatos.append((mejor_dist, mejor_par))
+            if mejor_par is not None:
+                candidatos.append((mejor_dist, mejor_par))
 
     candidatos.sort(key=lambda c: c[0])
     resultados = []

@@ -54,7 +54,7 @@ def _obtener_grafo_base(lugar: str | list[str], forzar_descarga: bool = False) -
      principales arriesga fragmentar la red en varios pedazos (le falta lo que conecta
      una avenida con otra); "drive" trae la jerarquía completa manejable sin arrastrar
      andenes, ciclorrutas ni vías de servicio que "all" sí incluiría"""
-    G_crudo = ox.graph_from_place(lugar, network_type="drive", simplify=True)
+    G_crudo = ox.graph_from_place(lugar, network_type="drive", simplify=True)  # type: ignore[arg-type]
 
     print(f"Proyectando al CRS {CRS_METRICO}...")
     """ tiene que pasar por acá ANTES de consolidar -- consolidate_intersections mide su
