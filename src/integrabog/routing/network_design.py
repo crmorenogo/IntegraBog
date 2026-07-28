@@ -191,27 +191,36 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
 
 
 def identificar_pares_criticos(G_multicapa: nx.MultiDiGraph, top_n: int = 5) -> list:
-    """Para cada par de componentes conexas del grafo macro (troncales que
-    hoy no comparten estación), halla las dos estaciones geométricamente
-    más cercanas entre sí -- candidatas de alto impacto porque están
-    físicamente cerca pero desconectadas en la red actual. Devuelve el
-    resultado completo de sugerir_nueva_troncal para los 'top_n' pares
-    más cercanos, más su distancia geométrica en línea recta."""
-    aristas_macro = [
-        (u, v, k)
-        for u, v, k, d in G_multicapa.edges(keys=True, data=True)
-        if d.get("layer") == "macro"
-    ]
-    G_macro = G_multicapa.edge_subgraph(aristas_macro)
-    componentes = list(nx.weakly_connected_components(G_macro))
+    """Agrupa las estaciones por la troncal a la que pertenecen y, para
+    cada par de troncales distintas, encuentra las dos estaciones
+    geométricamente más cercanas entre sí. Devuelve el resultado de
+    sugerir_nueva_troncal para los 'top_n' pares más cercanos, más su
+    distancia en línea recta.
 
+    Usa troncales (nom_tronc) en vez de componentes conexas porque la
+    red troncal completa de TransMilenio es un solo componente conectado
+    — si se usaran componentes, nunca habría ningún par que comparar."""
+    troncales: dict[str, set] = {}
+    for u, v, d in G_multicapa.edges(data=True):
+        if d.get("layer") != "macro":
+            continue
+        nom = d.get("nom_tronc")
+        if not nom:
+            continue
+        if nom not in troncales:
+            troncales[nom] = set()
+        troncales[nom].add(u)
+        troncales[nom].add(v)
+
+    nombres = list(troncales.keys())
     candidatos = []
-    for i in range(len(componentes)):
-        for j in range(i + 1, len(componentes)):
+
+    for i in range(len(nombres)):
+        for j in range(i + 1, len(nombres)):
             mejor_dist, mejor_par = float("inf"), None
-            for a in componentes[i]:
+            for a in troncales[nombres[i]]:
                 xa, ya = G_multicapa.nodes[a]["x"], G_multicapa.nodes[a]["y"]
-                for b in componentes[j]:
+                for b in troncales[nombres[j]]:
                     xb, yb = G_multicapa.nodes[b]["x"], G_multicapa.nodes[b]["y"]
                     d = ((xa - xb) ** 2 + (ya - yb) ** 2) ** 0.5
                     if d < mejor_dist:
