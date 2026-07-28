@@ -80,20 +80,6 @@ body { display: flex; }
   line-height: 1.45;
 }
 
-/* ── banner de simulación ──────────────────────────────────────── */
-
-.banner-simulacion {
-  background: #FFD100;
-  color: #1A1A1A;
-  border-radius: 6px;
-  padding: 12px 14px;
-  margin: 0 0 14px 0;
-  font-size: 0.8rem;
-  line-height: 1.4;
-}
-
-.banner-simulacion .banner-texto { margin-bottom: 8px; }
-
 /* ── bloques / secciones ───────────────────────────────────────── */
 
 .bloque {
@@ -105,6 +91,11 @@ body { display: flex; }
 }
 
 .bloque h2 {
+  font-size: 0.9rem;
+  margin: 0 0 8px 0;
+  color: #FFD100;
+  font-weight: 600;
+}
   font-size: 0.9rem;
   margin: 0 0 8px 0;
   color: #FFD100;
@@ -174,48 +165,6 @@ button:disabled {
   color: #666;
   cursor: not-allowed;
 }
-
-/* botón de simulación en tarjetas */
-.btn-simular {
-  margin-top: 8px;
-  padding: 6px 0;
-  border: 1px solid #DA291C;
-  border-radius: 5px;
-  background: transparent;
-  color: #DA291C;
-  font-weight: 600;
-  font-size: 0.74rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.btn-simular:hover {
-  background: #DA291C;
-  color: #fff;
-}
-
-.btn-simular.activado {
-  border-color: #FFD100;
-  background: #2A2500;
-  color: #FFD100;
-  cursor: default;
-}
-
-/* botón restaurar en banner */
-.btn-restaurar {
-  width: 100%;
-  padding: 7px 0;
-  border: 1px solid #1A1A1A;
-  border-radius: 5px;
-  background: #1A1A1A;
-  color: #FFD100;
-  font-weight: 600;
-  font-size: 0.78rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-restaurar:hover { background: #333; }
 
 /* ── utilidades ────────────────────────────────────────────────── */
 
@@ -318,16 +267,6 @@ button:disabled {
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
-}
-
-/* ── nota de simulación en sugerencias ─────────────────────────── */
-
-.nota-simulacion {
-  font-size: 0.7rem;
-  color: #FFD100;
-  margin-top: 6px;
-  padding: 4px 0;
-  border-top: 1px dotted #333;
 }
 
 /* ── footer ────────────────────────────────────────────────────── */

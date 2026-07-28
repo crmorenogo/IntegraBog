@@ -20,7 +20,7 @@ from integrabog.config import CRS_METRICO
 from integrabog.graph.macro import construir_grafo_macro
 from integrabog.graph.micro import obtener_malla_vial
 from integrabog.graph.multilayer import construir_grafo_multicapa
-from integrabog.routing.network_design import VELOCIDAD_BRT_KMH, calcular_costo_brt
+from integrabog.routing.network_design import calcular_costo_brt
 
 # Mismo transformador de coordenadas que usa network_design.py, pero
 # expuesto aqui porque la API tambien necesita convertir coordenadas de
@@ -29,64 +29,11 @@ TRANSFORMADOR_A_LONLAT = Transformer.from_crs(CRS_METRICO, "EPSG:4326", always_x
 
 
 class EstadoGrafo:
-    """Contenedor para el grafo multicapa, con soporte para simulación
-    'what‑if' de nuevas conexiones (pares críticos activables)."""
+    """Contenedor simple para el grafo multicapa ya listo para consultar."""
 
     def __init__(self, grafo: nx.MultiDiGraph, segundos_construccion: float):
         self.grafo = grafo
         self.segundos_construccion = segundos_construccion
-        # --- estado de simulación what‑if ---
-        self.conexion_activa: dict | None = None
-        self._aristas_virtuales: list[tuple] = []  # (u, v, key) de aristas inyectadas
-
-    # ------------------------------------------------------------------
-    # mutación del grafo para simulación de pares críticos
-    # ------------------------------------------------------------------
-
-    def activar_conexion(self, origen: str, destino: str, tiempo_min: float) -> dict:
-        """Añade aristas macro virtuales entre *origen* y *destino* para
-        simular que existe una troncal nueva con el tiempo de viaje dado.
-
-        Si ya hay una simulación activa, la reemplaza automáticamente."""
-        if self.conexion_activa is not None:
-            self.desactivar_conexion()
-
-        # peso en metros tal que Dijkstra en capa macro devuelva
-        # exactamente *tiempo_min* minutos (ver _peso_tiempo en
-        # network_design.py: tiempo = (weight / 1000) / 25.2 * 60)
-        peso_m = tiempo_min * VELOCIDAD_BRT_KMH * 1000.0 / 60.0
-
-        atributos = {
-            "layer": "macro",
-            "nom_tronc": "SIMULACIÓN",
-            "weight": peso_m,
-            "length": peso_m,
-            "virtual": True,
-        }
-
-        k_ida = self.grafo.add_edge(origen, destino, **atributos)
-        k_vuelta = self.grafo.add_edge(destino, origen, **atributos)
-
-        self._aristas_virtuales = [
-            (origen, destino, k_ida),
-            (destino, origen, k_vuelta),
-        ]
-
-        self.conexion_activa = {
-            "estacion_origen": origen,
-            "estacion_destino": destino,
-            "tiempo_nueva_ruta_min": tiempo_min,
-        }
-        return self.conexion_activa
-
-    def desactivar_conexion(self) -> None:
-        """Elimina las aristas virtuales inyectadas y restaura el grafo
-        a su estado original."""
-        for u, v, k in self._aristas_virtuales:
-            if self.grafo.has_edge(u, v, k):
-                self.grafo.remove_edge(u, v, k)
-        self._aristas_virtuales.clear()
-        self.conexion_activa = None
 
 
 def construir_estado() -> EstadoGrafo:

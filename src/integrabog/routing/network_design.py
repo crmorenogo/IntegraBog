@@ -54,6 +54,8 @@ def _resolver_estacion(G_multicapa: nx.MultiDiGraph, identificador: str) -> str:
         return coincidencias[0]
     if len(coincidencias) > 1:
         nombres = [G_multicapa.nodes[n]["nombre"] for n in coincidencias]
+        if len(set(nombres)) == 1:
+            return coincidencias[0]  # mismo nombre varias veces → mismo lugar físico
         raise EstacionNoEncontradaError(f"'{identificador}' es ambiguo: {nombres}")
     raise EstacionNoEncontradaError(f"No se encontró ninguna estación para: '{identificador}'")
 
@@ -204,8 +206,6 @@ def identificar_pares_criticos(G_multicapa: nx.MultiDiGraph, top_n: int = 5) -> 
     for u, v, d in G_multicapa.edges(data=True):
         if d.get("layer") != "macro":
             continue
-        if d.get("virtual") or d.get("nom_tronc") == "SIMULACIÓN":
-            continue  # arista inyectada por el sistema what‑if → no agrupar
         nom = d.get("nom_tronc")
         if not nom:
             continue

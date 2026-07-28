@@ -11,9 +11,7 @@ import networkx as nx
 from fastapi import APIRouter, HTTPException, Query, Request
 
 from integrabog.api.schemas import (
-    ActivacionIn,
     AristaRedActualOut,
-    ConexionActivaOut,
     DiagnosticoOut,
     EstacionOut,
     SugerenciaOut,
@@ -37,12 +35,9 @@ def _a_lonlat(x: float, y: float) -> tuple[float, float]:
     return round(lon, 6), round(lat, 6)
 
 
-def _resultado_a_schema(
-    r: dict, G: nx.MultiDiGraph, *, simulacion_activa: bool = False
-) -> SugerenciaOut:
+def _resultado_a_schema(r: dict, G: nx.MultiDiGraph) -> SugerenciaOut:
     """Convierte el dict que devuelve sugerir_nueva_troncal en el schema
-    de salida, agregando los nombres legibles de las estaciones y el
-    flag de simulación what‑if."""
+    de salida, agregando los nombres legibles de las estaciones."""
     ts = r["tiempo_actual_min"]
     tn = r["tiempo_nueva_ruta_min"]
     if ts is None:
@@ -65,7 +60,6 @@ def _resultado_a_schema(
         estaciones_intermedias_lonlat=r["estaciones_intermedias_lonlat"],
         distancia_geometrica_m=r.get("distancia_geometrica_m"),
         recomendacion=recomendacion,
-        simulacion_activa=simulacion_activa,
     )
 
 
@@ -96,7 +90,16 @@ def listar_estaciones(request: Request):
             )
         )
     estaciones.sort(key=lambda e: e.nombre)
-    return estaciones
+    # Deduplicar: si hay estaciones con el mismo nombre (p. ej. una
+    # estación que pertenece a dos troncales), conservar solo la
+    # primera para no confundir al usuario en el <select>.
+    vistos: set[str] = set()
+    unicas: list[EstacionOut] = []
+    for e in estaciones:
+        if e.nombre not in vistos:
+            vistos.add(e.nombre)
+            unicas.append(e)
+    return unicas
 
 
 @router.get("/red-actual", response_model=list[AristaRedActualOut])
@@ -140,7 +143,6 @@ def sugerir(
     propuesta sobre la malla vial, entre dos estaciones dadas por el
     usuario."""
     G = _estado(request).grafo
-    hay_simulacion = _estado(request).conexion_activa is not None
     try:
         resultado = sugerir_nueva_troncal(G, origen, destino)
     except EstacionNoEncontradaError as err:
@@ -150,7 +152,7 @@ def sugerir(
             status_code=422,
             detail=f"No fue posible calcular una ruta nueva entre esas estaciones: {err}",
         ) from err
-    return _resultado_a_schema(resultado, G, simulacion_activa=hay_simulacion)
+    return _resultado_a_schema(resultado, G)
 
 
 @router.get("/pares-criticos", response_model=list[SugerenciaOut])
@@ -161,9 +163,8 @@ def pares_criticos(
     """Encuentra automaticamente los pares de estaciones mas prometedores
     para una troncal nueva, sin que el usuario elija origen/destino."""
     G = _estado(request).grafo
-    hay_simulacion = _estado(request).conexion_activa is not None
     resultados = identificar_pares_criticos(G, top_n=top_n)
-    return [_resultado_a_schema(r, G, simulacion_activa=hay_simulacion) for r in resultados]
+    return [_resultado_a_schema(r, G) for r in resultados]
 
 
 @router.get("/diagnostico", response_model=DiagnosticoOut)
@@ -180,68 +181,3 @@ def diagnostico(request: Request):
         aristas_por_capa=dict(conteo_capas),
         segundos_construccion_grafo=round(estado.segundos_construccion, 1),
     )
-
-
-# ---------------------------------------------------------------------------
-# simulación what‑if de pares críticos
-# ---------------------------------------------------------------------------
-
-
-def _conexion_a_schema(estado: EstadoGrafo, datos_visuales: dict | None) -> ConexionActivaOut:
-    """Convierte el estado interno de conexión activa en el schema de respuesta."""
-    if estado.conexion_activa is None:
-        return ConexionActivaOut(activa=False)
-    c = estado.conexion_activa
-    return ConexionActivaOut(
-        activa=True,
-        nombre_origen=datos_visuales.get("nombre_origen") if datos_visuales else None,
-        nombre_destino=datos_visuales.get("nombre_destino") if datos_visuales else None,
-        tiempo_nueva_ruta_min=c["tiempo_nueva_ruta_min"],
-        geometria_lonlat=datos_visuales.get("geometria_lonlat") if datos_visuales else None,
-        estaciones_intermedias_lonlat=(
-            datos_visuales.get("estaciones_intermedias_lonlat") if datos_visuales else None
-        ),
-    )
-
-
-@router.post("/activar-conexion", response_model=ConexionActivaOut)
-def activar_conexion(body: ActivacionIn, request: Request):
-    """Activa una simulación what‑if: inyecta una arista macro virtual
-    entre las dos estaciones del par crítico seleccionado.  A partir de
-    este momento todas las consultas de ruteo usan la red aumentada.
-
-    Si ya hay una simulación activa se reemplaza automáticamente."""
-    estado = _estado(request)
-    estado.activar_conexion(
-        body.estacion_origen,
-        body.estacion_destino,
-        body.tiempo_nueva_ruta_min,
-    )
-    # guardamos los datos visuales en la propia conexión activa para
-    # que /conexion-activa pueda devolver la geometría sin reconsultar
-    estado.conexion_activa["_visual"] = {
-        "nombre_origen": body.nombre_origen,
-        "nombre_destino": body.nombre_destino,
-        "geometria_lonlat": body.geometria_lonlat,
-        "estaciones_intermedias_lonlat": body.estaciones_intermedias_lonlat,
-    }
-    return _conexion_a_schema(estado, estado.conexion_activa["_visual"])
-
-
-@router.post("/desactivar-conexion")
-def desactivar_conexion(request: Request):
-    """Restaura la red original, eliminando la arista virtual inyectada."""
-    estado = _estado(request)
-    estado.desactivar_conexion()
-    return {"activa": False, "mensaje": "Red original restaurada"}
-
-
-@router.get("/conexion-activa", response_model=ConexionActivaOut)
-def conexion_activa(request: Request):
-    """Devuelve el estado actual de la simulación what‑if (activa o no,
-    y los datos de la conexión simulada si la hay)."""
-    estado = _estado(request)
-    datos_visuales = (
-        estado.conexion_activa.get("_visual") if estado.conexion_activa else None
-    )
-    return _conexion_a_schema(estado, datos_visuales)
