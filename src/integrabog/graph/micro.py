@@ -13,15 +13,16 @@ vez en RUTA_GRAFO_BASE, y cada tolerancia que se pruebe cachea su propio
 resultado aparte -- probar una tolerancia nueva es rápido, y volver a
 una que ya se probó es instantáneo.
 """
+
 import networkx as nx
 import osmnx as ox
 
 from integrabog.config import (
+    CONSERVAR_VIAS_SIN_SALIDA,
     CRS_METRICO,
     RUTA_GRAFO_BASE,
     RUTA_GRAFO_MICRO,
     TOLERANCIA_CONSOLIDACION_M,
-    CONSERVAR_VIAS_SIN_SALIDA,
 )
 
 
@@ -49,15 +50,15 @@ def _obtener_grafo_base(lugar: str | list[str], forzar_descarga: bool = False) -
     print(f"Descargando red vial de '{lugar}' desde OpenStreetMap...")
     ox.settings.use_cache = True
     ox.settings.log_console = True
-    """ "drive" y no un filtro custom a trunk/primary/secondary: restringir solo a vías
-     principales arriesga fragmentar la red en varios pedazos (le falta lo que conecta
-     una avenida con otra); "drive" trae la jerarquía completa manejable sin arrastrar
-     andenes, ciclorrutas ni vías de servicio que "all" sí incluiría"""
-    G_crudo = ox.graph_from_place(lugar, network_type="drive", simplify=True)
+    # "drive" y no un filtro custom a trunk/primary/secondary: restringir solo a vías
+    # principales arriesga fragmentar la red en varios pedazos (le falta lo que conecta
+    # una avenida con otra); "drive" trae la jerarquía completa manejable sin arrastrar
+    # andenes, ciclorrutas ni vías de servicio que "all" sí incluiría
+    G_crudo = ox.graph_from_place(lugar, network_type="drive", simplify=True)  # type: ignore[arg-type]
 
     print(f"Proyectando al CRS {CRS_METRICO}...")
-    """ tiene que pasar por acá ANTES de consolidar -- consolidate_intersections mide su
-     tolerancia en las unidades del CRS, y en CRS84 (grados) esa tolerancia no significa nada"""
+    # tiene que pasar por acá ANTES de consolidar -- consolidate_intersections mide su
+    # tolerancia en las unidades del CRS, y en CRS84 (grados) esa tolerancia no significa nada
     G_proyectado = ox.project_graph(G_crudo, to_crs=CRS_METRICO)
 
     RUTA_GRAFO_BASE.parent.mkdir(parents=True, exist_ok=True)
@@ -81,7 +82,7 @@ def _ruta_cache_micro(tolerancia: float):
 
 
 def obtener_malla_vial(
-    lugar: str | list[str] = ["Bogotá, Colombia", "Soacha, Colombia"],
+    lugar: str | list[str] | None = None,
     forzar_descarga: bool = False,
     tolerancia: float = TOLERANCIA_CONSOLIDACION_M,
 ) -> nx.MultiDiGraph:
@@ -110,28 +111,35 @@ def obtener_malla_vial(
         print(f"Cargando grafo micro (tolerancia={tolerancia}) desde caché: {ruta_cache}")
         return ox.load_graphml(ruta_cache)
 
+    if lugar is None:
+        lugar = ["Bogotá, Colombia", "Soacha, Colombia"]
     G_proyectado = _obtener_grafo_base(lugar, forzar_descarga)
     nodos_antes = G_proyectado.number_of_nodes()
 
     print(f"Consolidando intersecciones (radio {tolerancia} m)...")
     G_consolidado = ox.consolidate_intersections(
-        G_proyectado, tolerance=tolerancia,
+        G_proyectado,
+        tolerance=tolerancia,
         rebuild_graph=True,
         dead_ends=CONSERVAR_VIAS_SIN_SALIDA,  # política explícita -- ver config.py
         reconnect_edges=True,
     )
     nodos_despues = G_consolidado.number_of_nodes()
-    print(f"Nodos: {nodos_antes} -> {nodos_despues} "
-          f"({(1 - nodos_despues / nodos_antes) * 100:.1f}% fusionado)")
+    print(
+        f"Nodos: {nodos_antes} -> {nodos_despues} "
+        f"({(1 - nodos_despues / nodos_antes) * 100:.1f}% fusionado)"
+    )
 
-    """ medir ANTES de quedarse solo con la componente más grande -- si se descartara a
-     ciegas y resultara que el segundo componente también es grande, se estaría
-     perdiendo una porción real de la ciudad sin enterarse"""
+    # medir ANTES de quedarse solo con la componente más grande -- si se descartara a
+    # ciegas y resultara que el segundo componente también es grande, se estaría
+    # perdiendo una porción real de la ciudad sin enterarse
     componentes = sorted(nx.strongly_connected_components(G_consolidado), key=len, reverse=True)
     print(f"Componentes fuertemente conexas: {len(componentes)}")
     print(f"Tamaños (top 10): {[len(c) for c in componentes[:10]]}")
-    print(f"El componente más grande retiene {len(componentes[0])}/{nodos_despues} nodos "
-          f"({len(componentes[0]) / nodos_despues * 100:.1f}%)")
+    print(
+        f"El componente más grande retiene {len(componentes[0])}/{nodos_despues} nodos "
+        f"({len(componentes[0]) / nodos_despues * 100:.1f}%)"
+    )
 
     G_final = G_consolidado.subgraph(componentes[0]).copy()
 

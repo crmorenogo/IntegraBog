@@ -1,7 +1,24 @@
 [project]
 name = "integrabog"
 version = "0.1.0"
+description = "Análisis y visualización de la red de TransMilenio — herramienta de diagnóstico y sugerencia de nuevas troncales"
+readme = "README.md"
 requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [
+    { name = "IntegraBog contributors" },
+]
+keywords = ["transmilenio", "bogota", "transit", "network-analysis", "graph"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+
 dependencies = [
     "geopandas>=1.1.4",
     "networkx>=3.6.1",
@@ -11,3 +28,69 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
 ]
+
+[project.urls]
+Repository = "https://github.com/crmorenogo/IntegraBog"
+Issues = "https://github.com/crmorenogo/IntegraBog/issues"
+
+[project.scripts]
+integrabog-api = "integrabog.api.main:app"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=6",
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "httpx",
+]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+]
+ignore = [
+    "E501",   # line-length (ya lo controla ruff.formatter)
+    "N802",   # nombres en minúscula — el proyecto usa snake_case en español
+    "N803",   # ídem para argumentos
+    "N806",   # ídem para variables
+    "N815",   # nombres mixtos en clases de terceros
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]   # imports re-exportados intencionalmente
+
+[tool.mypy]
+python_version = "3.13"
+warn_unused_ignores = true
+ignore_missing_imports = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+markers = [
+    "slow: tests que requieren descarga de datos o son lentos",
+    "api: tests de integración contra FastAPI TestClient",
+]
+
+[tool.coverage.run]
+source = ["src/integrabog"]
+omit = ["*/tests/*", "*/scripts/*"]

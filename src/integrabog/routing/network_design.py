@@ -3,20 +3,31 @@ Motor de sugerencia de infraestructura (Fase 4): compara el tiempo actual
 por la red troncal existente contra el tiempo de una ruta nueva propuesta
 sobre la malla vial, penalizada según la jerarquía de cada calle.
 """
+
 import networkx as nx
 from pyproj import Transformer
 
 VELOCIDAD_BRT_KMH = 25.2
 VELOCIDAD_CAMINATA_KMH = 4.5
-ESPACIADO_ESTACIONES_M = 500.0
+# Las estaciones intermedias se sugieren cada ~600 m para que
+# el usuario pueda visualizar puntos de parada aproximados sin
+# saturar el mapa con los ~50.000 nodos de la malla vial.
+ESPACIADO_ESTACIONES_M = 600.0
 
 PENALIZACION_VIAL = {
-    "motorway": 1.0, "motorway_link": 1.0,
-    "trunk": 1.0, "trunk_link": 1.0,
-    "primary": 1.15, "primary_link": 1.15,
-    "secondary": 1.6, "secondary_link": 1.6,
-    "tertiary": 3.0, "tertiary_link": 3.0,
-    "residential": 10.0, "living_street": 10.0, "unclassified": 10.0,
+    "motorway": 1.0,
+    "motorway_link": 1.0,
+    "trunk": 1.0,
+    "trunk_link": 1.0,
+    "primary": 1.15,
+    "primary_link": 1.15,
+    "secondary": 1.6,
+    "secondary_link": 1.6,
+    "tertiary": 3.0,
+    "tertiary_link": 3.0,
+    "residential": 10.0,
+    "living_street": 10.0,
+    "unclassified": 10.0,
 }
 PENALIZACION_DEFECTO = 10.0
 
@@ -35,7 +46,8 @@ def _resolver_estacion(G_multicapa: nx.MultiDiGraph, identificador: str) -> str:
     if id_macro in G_multicapa.nodes:
         return id_macro
     coincidencias = [
-        n for n, d in G_multicapa.nodes(data=True)
+        n
+        for n, d in G_multicapa.nodes(data=True)
         if d.get("layer") == "macro" and identificador.lower() in d.get("nombre", "").lower()
     ]
     if len(coincidencias) == 1:
@@ -60,7 +72,7 @@ def calcular_costo_brt(G_multicapa: nx.MultiDiGraph) -> None:
         datos["tiempo_brt_min"] = (largo_m / 1000) / VELOCIDAD_BRT_KMH * 60 * factor
 
 
-def _mejor_arista(datos_multi: dict) -> dict:
+def _mejor_arista(datos_multi: dict) -> dict | None:
     mejor, mejor_tiempo = None, float("inf")
     for d in datos_multi.values():
         capa = d.get("layer")
@@ -77,7 +89,7 @@ def _mejor_arista(datos_multi: dict) -> dict:
     return mejor
 
 
-def _peso_tiempo(u, v, datos_multi):
+def _peso_tiempo(_u, _v, datos_multi):
     arista = _mejor_arista(datos_multi)
     if arista is None:
         return None
@@ -89,13 +101,16 @@ def _peso_tiempo(u, v, datos_multi):
     return (arista["weight"] / 1000) / VELOCIDAD_BRT_KMH * 60
 
 
-def _estaciones_intermedias(G_multicapa: nx.MultiDiGraph, camino: list,
-                              espaciado_min_m: float = ESPACIADO_ESTACIONES_M) -> list:
+def _estaciones_intermedias(
+    G_multicapa: nx.MultiDiGraph, camino: list, espaciado_min_m: float = ESPACIADO_ESTACIONES_M
+) -> list:
     paradas = [camino[0]]
     acumulado = 0.0
     for i in range(len(camino) - 1):
         u, v = camino[i], camino[i + 1]
         arista = _mejor_arista(G_multicapa.get_edge_data(u, v))
+        if arista is None:
+            continue
         largo_m = arista.get("length", arista.get("weight", 0.0))
         acumulado += largo_m
         if acumulado >= espaciado_min_m and v != camino[-1]:
@@ -134,8 +149,11 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
     }
 
     # 1. Línea base: solo la red troncal existente
-    aristas_macro = [(u, v, k) for u, v, k, d in G_multicapa.edges(keys=True, data=True)
-                      if d.get("layer") == "macro"]
+    aristas_macro = [
+        (u, v, k)
+        for u, v, k, d in G_multicapa.edges(keys=True, data=True)
+        if d.get("layer") == "macro"
+    ]
     G_macro = G_multicapa.edge_subgraph(aristas_macro)
     try:
         camino_actual = nx.shortest_path(G_macro, id_origen, id_destino, weight=_peso_tiempo)
@@ -148,9 +166,13 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
 
     # 2 y 3. Ruta propuesta: solo malla vial + las 2 transferencias relevantes
     aristas_ruta = [
-        (u, v, k) for u, v, k, d in G_multicapa.edges(keys=True, data=True)
+        (u, v, k)
+        for u, v, k, d in G_multicapa.edges(keys=True, data=True)
         if d.get("layer") == "micro"
-        or (d.get("layer") == "transferencia" and (u in (id_origen, id_destino) or v in (id_origen, id_destino)))
+        or (
+            d.get("layer") == "transferencia"
+            and (u in (id_origen, id_destino) or v in (id_origen, id_destino))
+        )
     ]
     G_ruta = G_multicapa.edge_subgraph(aristas_ruta)
     camino = nx.shortest_path(G_ruta, id_origen, id_destino, weight=_peso_tiempo)
@@ -169,29 +191,42 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
 
 
 def identificar_pares_criticos(G_multicapa: nx.MultiDiGraph, top_n: int = 5) -> list:
-    """Para cada par de componentes conexas del grafo macro (troncales que
-    hoy no comparten estación), halla las dos estaciones geométricamente
-    más cercanas entre sí -- candidatas de alto impacto porque están
-    físicamente cerca pero desconectadas en la red actual. Devuelve el
-    resultado completo de sugerir_nueva_troncal para los 'top_n' pares
-    más cercanos, más su distancia geométrica en línea recta."""
-    aristas_macro = [(u, v, k) for u, v, k, d in G_multicapa.edges(keys=True, data=True)
-                      if d.get("layer") == "macro"]
-    G_macro = G_multicapa.edge_subgraph(aristas_macro)
-    componentes = list(nx.weakly_connected_components(G_macro))
+    """Agrupa las estaciones por la troncal a la que pertenecen y, para
+    cada par de troncales distintas, encuentra las dos estaciones
+    geométricamente más cercanas entre sí. Devuelve el resultado de
+    sugerir_nueva_troncal para los 'top_n' pares más cercanos, más su
+    distancia en línea recta.
 
+    Usa troncales (nom_tronc) en vez de componentes conexas porque la
+    red troncal completa de TransMilenio es un solo componente conectado
+    — si se usaran componentes, nunca habría ningún par que comparar."""
+    troncales: dict[str, set] = {}
+    for u, v, d in G_multicapa.edges(data=True):
+        if d.get("layer") != "macro":
+            continue
+        nom = d.get("nom_tronc")
+        if not nom:
+            continue
+        if nom not in troncales:
+            troncales[nom] = set()
+        troncales[nom].add(u)
+        troncales[nom].add(v)
+
+    nombres = list(troncales.keys())
     candidatos = []
-    for i in range(len(componentes)):
-        for j in range(i + 1, len(componentes)):
+
+    for i in range(len(nombres)):
+        for j in range(i + 1, len(nombres)):
             mejor_dist, mejor_par = float("inf"), None
-            for a in componentes[i]:
+            for a in troncales[nombres[i]]:
                 xa, ya = G_multicapa.nodes[a]["x"], G_multicapa.nodes[a]["y"]
-                for b in componentes[j]:
+                for b in troncales[nombres[j]]:
                     xb, yb = G_multicapa.nodes[b]["x"], G_multicapa.nodes[b]["y"]
                     d = ((xa - xb) ** 2 + (ya - yb) ** 2) ** 0.5
                     if d < mejor_dist:
                         mejor_dist, mejor_par = d, (a, b)
-            candidatos.append((mejor_dist, mejor_par))
+            if mejor_par is not None:
+                candidatos.append((mejor_dist, mejor_par))
 
     candidatos.sort(key=lambda c: c[0])
     resultados = []

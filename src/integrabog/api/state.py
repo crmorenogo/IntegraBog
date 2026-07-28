@@ -10,6 +10,7 @@ Por que no se reconstruye en cada request:
     bloque de codigo que corre una vez al iniciar el proceso y deja
     el resultado disponible en app.state.
 """
+
 import time
 
 import networkx as nx
@@ -61,7 +62,9 @@ def construir_estado() -> EstadoGrafo:
     calcular_costo_brt(G_multicapa)
 
     duracion = time.perf_counter() - inicio
-    print(f"[API] Grafo multicapa listo en {duracion:.1f} s "
-          f"({G_multicapa.number_of_nodes()} nodos, {G_multicapa.number_of_edges()} aristas).")
+    print(
+        f"[API] Grafo multicapa listo en {duracion:.1f} s "
+        f"({G_multicapa.number_of_nodes()} nodos, {G_multicapa.number_of_edges()} aristas)."
+    )
 
     return EstadoGrafo(grafo=G_multicapa, segundos_construccion=duracion)

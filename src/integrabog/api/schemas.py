@@ -4,6 +4,7 @@ devuelve. Sirven como contrato explicito para quien consuma la API
 (el frontend, o cualquier otro cliente) y ademas generan la
 documentacion automatica en /docs.
 """
+
 from pydantic import BaseModel, Field
 
 
@@ -33,7 +34,8 @@ class SugerenciaOut(BaseModel):
     nombre_destino: str
 
     tiempo_actual_min: float | None = Field(
-        None, description="Tiempo por la red troncal existente. None si no hay conexion directa hoy."
+        None,
+        description="Tiempo por la red troncal existente. None si no hay conexion directa hoy.",
     )
     geometria_actual_lonlat: list[list[float]] | None = None
 
@@ -46,6 +48,15 @@ class SugerenciaOut(BaseModel):
 
     distancia_geometrica_m: float | None = Field(
         None, description="Solo presente cuando el resultado viene de /pares-criticos"
+    )
+
+    recomendacion: str = Field(
+        "ruta_nueva",
+        description=(
+            "'ruta_nueva': la ruta propuesta es mejor. "
+            "'ruta_actual': la ruta actual de TransMilenio ya es mejor. "
+            "'sin_conexion_actual': no hay troncal directa hoy."
+        ),
     )
 
 

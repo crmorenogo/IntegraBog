@@ -14,6 +14,7 @@ silencio los atributos de una estación real con los de una intersección
 cualquiera -- sin ningún error, solo datos corruptos. El prefijo
 elimina la colisión por construcción.
 """
+
 import networkx as nx
 import osmnx as ox
 
@@ -66,19 +67,19 @@ def construir_grafo_multicapa(G_macro: nx.DiGraph, G_micro: nx.MultiDiGraph) -> 
 
     G_multicapa = nx.compose(G_macro_capa, G_micro_capa)
 
-    """snapping vectorizado: todas las estaciones contra el grafo vial en una sola llamada,
-     no un nearest_nodes por estación -- con 150 estaciones y ~50.000 nodos viales, hacerlo
-     de a uno sería 150 búsquedas independientes en vez de una sola búsqueda por lotes"""
+    # snapping vectorizado: todas las estaciones contra el grafo vial en una sola llamada,
+    # no un nearest_nodes por estación -- con 150 estaciones y ~50.000 nodos viales, hacerlo
+    # de a uno sería 150 búsquedas independientes en vez de una sola búsqueda por lotes
     estaciones = [(n, d["x"], d["y"]) for n, d in G_macro_capa.nodes(data=True)]
-    ids_estacion, xs, ys = zip(*estaciones)
+    ids_estacion, xs, ys = zip(*estaciones, strict=False)
     nodos_viales, distancias = ox.distance.nearest_nodes(
         G_micro_capa, X=list(xs), Y=list(ys), return_dist=True
     )
 
-    for id_estacion, id_vial, dist in zip(ids_estacion, nodos_viales, distancias):
+    for id_estacion, id_vial, dist in zip(ids_estacion, nodos_viales, distancias, strict=False):
         peso = round(float(dist), 2)
-        """ambos sentidos: la transferencia es caminar, y se puede entrar o salir de la
-        # estación indistintamente por esa intersección"""
+        # ambos sentidos: la transferencia es caminar, y se puede entrar o salir de la
+        # estación indistintamente por esa intersección
         G_multicapa.add_edge(id_estacion, id_vial, weight=peso, layer="transferencia")
         G_multicapa.add_edge(id_vial, id_estacion, weight=peso, layer="transferencia")
 

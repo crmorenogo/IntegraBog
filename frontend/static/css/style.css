@@ -149,6 +149,29 @@ button:disabled {
   margin-top: 6px;
 }
 
+.recomendacion {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.recomendacion.actual {
+  color: #facc15;
+  background: #1e293b;
+}
+
+.recomendacion.nueva {
+  color: #3b82f6;
+  background: #1e293b;
+}
+
+.recomendacion.sin-conexion {
+  color: #f97316;
+  background: #1e293b;
+}
+
 .leyenda span {
   display: flex;
   align-items: center;

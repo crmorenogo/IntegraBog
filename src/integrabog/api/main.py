@@ -13,6 +13,7 @@ las peticiones reusan ese mismo grafo en memoria.
 Documentacion interactiva automatica una vez arriba: http://localhost:8000/docs
 Frontend servido en:                                  http://localhost:8000/
 """
+
 from contextlib import asynccontextmanager
 from pathlib import Path
 

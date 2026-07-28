@@ -1,5 +1,0 @@
-geopandas>=1.1.4
-networkx>=3.6.1
-osmnx>=2.1.0
-fastapi>=0.115
-uvicorn[standard]>=0.32

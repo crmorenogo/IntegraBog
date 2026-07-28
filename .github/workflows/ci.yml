@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, front_back]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
+      - name: Instalar dependencias
+        run: uv sync --extra dev
+      - name: Ruff
+        run: uv run ruff check .
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
+      - name: Instalar dependencias
+        run: uv sync --extra dev
+      - name: MyPy
+        run: uv run mypy src/integrabog/
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
+      - name: Instalar dependencias
+        run: uv sync --extra dev
+      - name: Tests
+        run: uv run pytest tests/ -v -m "not slow" --cov=src/integrabog/

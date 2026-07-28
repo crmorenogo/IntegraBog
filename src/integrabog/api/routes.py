@@ -4,6 +4,7 @@ Rutas HTTP de la API de IntegraBog.
 Todas las rutas leen el grafo multicapa desde `request.app.state.grafo`
 (ver state.py y main.py) -- nunca lo reconstruyen, solo lo consultan.
 """
+
 from collections import Counter
 
 import networkx as nx
@@ -37,18 +38,28 @@ def _a_lonlat(x: float, y: float) -> tuple[float, float]:
 def _resultado_a_schema(r: dict, G: nx.MultiDiGraph) -> SugerenciaOut:
     """Convierte el dict que devuelve sugerir_nueva_troncal en el schema
     de salida, agregando los nombres legibles de las estaciones."""
+    ts = r["tiempo_actual_min"]
+    tn = r["tiempo_nueva_ruta_min"]
+    if ts is None:
+        recomendacion = "sin_conexion_actual"
+    elif ts <= tn:
+        recomendacion = "ruta_actual"
+    else:
+        recomendacion = "ruta_nueva"
+
     return SugerenciaOut(
         estacion_origen=r["estacion_origen"],
         estacion_destino=r["estacion_destino"],
         nombre_origen=G.nodes[r["estacion_origen"]].get("nombre", r["estacion_origen"]),
         nombre_destino=G.nodes[r["estacion_destino"]].get("nombre", r["estacion_destino"]),
-        tiempo_actual_min=r["tiempo_actual_min"],
-        geometria_actual_lonlat=r["geometria_actual_lonlat"],
-        tiempo_nueva_ruta_min=r["tiempo_nueva_ruta_min"],
-        ahorro_min=r["ahorro_min"],
+        tiempo_actual_min=ts,
+        geometria_actual_lonlat=r.get("geometria_actual_lonlat"),
+        tiempo_nueva_ruta_min=tn,
+        ahorro_min=r.get("ahorro_min"),
         geometria_lonlat=r["geometria_lonlat"],
         estaciones_intermedias_lonlat=r["estaciones_intermedias_lonlat"],
         distancia_geometrica_m=r.get("distancia_geometrica_m"),
+        recomendacion=recomendacion,
     )
 
 
@@ -103,8 +114,10 @@ def red_actual(request: Request):
         lon_v, lat_v = _a_lonlat(dv["x"], dv["y"])
         aristas.append(
             AristaRedActualOut(
-                origen_lon=lon_u, origen_lat=lat_u,
-                destino_lon=lon_v, destino_lat=lat_v,
+                origen_lon=lon_u,
+                origen_lat=lat_u,
+                destino_lon=lon_v,
+                destino_lat=lat_v,
                 nom_tronc=datos.get("nom_tronc"),
             )
         )
@@ -124,12 +137,12 @@ def sugerir(
     try:
         resultado = sugerir_nueva_troncal(G, origen, destino)
     except EstacionNoEncontradaError as err:
-        raise HTTPException(status_code=404, detail=str(err))
+        raise HTTPException(status_code=404, detail=str(err)) from err
     except (nx.NetworkXNoPath, nx.NodeNotFound) as err:
         raise HTTPException(
             status_code=422,
             detail=f"No fue posible calcular una ruta nueva entre esas estaciones: {err}",
-        )
+        ) from err
     return _resultado_a_schema(resultado, G)
 
 

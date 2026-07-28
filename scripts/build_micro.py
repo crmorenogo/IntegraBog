@@ -7,6 +7,7 @@ el grafo macro ni el multicapa encima. Si esto falla o da un número
 raro, el problema está en la descarga/consolidación de OSMnx, no en
 nada de lo que se construye después.
 """
+
 from integrabog.graph.micro import obtener_malla_vial
 
 

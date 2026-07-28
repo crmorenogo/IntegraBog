@@ -83,29 +83,38 @@ async function cargarRedActual() {
 
 function dibujarSugerencia(r) {
   if (r.geometria_actual_lonlat) {
+    const esMejorActual = r.recomendacion === 'ruta_actual';
     L.polyline(
       r.geometria_actual_lonlat.map(([lon, lat]) => [lat, lon]),
-      { color: '#facc15', weight: 3, dashArray: '6 6' }
+      {
+        color: '#facc15',
+        weight: esMejorActual ? 5 : 3,
+        dashArray: esMejorActual ? null : '6 6',
+        opacity: esMejorActual ? 1 : 0.7,
+      }
     )
-      .bindTooltip(`Ruta actual: ${r.tiempo_actual_min} min`)
+      .bindTooltip(`Ruta actual: ${r.tiempo_actual_min} min${esMejorActual ? ' ★ RECOMENDADA' : ''}`)
       .addTo(capaResultados);
   }
 
+  const esMejorNueva = r.recomendacion === 'ruta_nueva';
   L.polyline(
     r.geometria_lonlat.map(([lon, lat]) => [lat, lon]),
-    { color: '#22c55e', weight: 4 }
+    { color: '#3b82f6', weight: esMejorNueva ? 5 : 4, opacity: esMejorNueva ? 1 : 0.6 }
   )
-    .bindTooltip(`Ruta nueva propuesta: ${r.tiempo_nueva_ruta_min} min`)
+    .bindTooltip(`Ruta nueva propuesta: ${r.tiempo_nueva_ruta_min} min${esMejorNueva ? ' ★ RECOMENDADA' : ''}`)
     .addTo(capaResultados);
 
   for (const [lon, lat] of r.estaciones_intermedias_lonlat) {
     L.circleMarker([lat, lon], {
-      radius: 5,
-      color: '#22c55e',
-      fillColor: '#0f172a',
+      radius: 7,
+      color: '#ca8a04',
+      fillColor: '#fef08a',
       fillOpacity: 1,
       weight: 2,
-    }).addTo(capaResultados);
+    })
+      .bindTooltip('Parada sugerida')
+      .addTo(capaResultados);
   }
 }
 
@@ -114,16 +123,27 @@ function tarjetaResultado(r) {
   div.className = 'tarjeta-resultado';
 
   let lineaAhorro;
+  let recomendacionHTML = '';
+
+  if (r.recomendacion === 'ruta_actual') {
+    recomendacionHTML = '<div class="recomendacion actual">✅ La ruta actual de TransMilenio ya es la mejor opción</div>';
+  } else if (r.recomendacion === 'ruta_nueva') {
+    recomendacionHTML = '<div class="recomendacion nueva">💡 Construir una nueva troncal reduciría los tiempos</div>';
+  } else {
+    recomendacionHTML = '<div class="recomendacion sin-conexion">🔌 No hay conexión directa por TransMilenio hoy</div>';
+  }
+
   if (r.ahorro_min === null || r.ahorro_min === undefined) {
     lineaAhorro = `<span class="ahorro-nulo">Sin conexión troncal directa hoy</span>`;
   } else if (r.ahorro_min > 0) {
     lineaAhorro = `Ahorro estimado: <span class="ahorro-positivo">${r.ahorro_min} min</span>`;
   } else {
-    lineaAhorro = `Ahorro estimado: ${r.ahorro_min} min`;
+    lineaAhorro = `Ahorro estimado: ${r.ahorro_min} min (la ruta actual es más rápida)`;
   }
 
   div.innerHTML = `
     <div class="titulo">${r.nombre_origen} &harr; ${r.nombre_destino}</div>
+    ${recomendacionHTML}
     <div>Tiempo actual: ${r.tiempo_actual_min ?? '—'} min</div>
     <div>Tiempo ruta nueva: ${r.tiempo_nueva_ruta_min} min</div>
     <div>${lineaAhorro}</div>
