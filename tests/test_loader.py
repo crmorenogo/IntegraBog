@@ -1,5 +1,3 @@
-"""Tests para el módulo data.loader."""
-
 import pytest
 
 from integrabog.config import (
@@ -11,8 +9,6 @@ from integrabog.config import (
 
 
 class TestRutas:
-    """Las rutas a los archivos crudos existen y apuntan a donde deben."""
-
     def test_raiz_proyecto_existe(self):
         assert RAIZ_PROYECTO.exists()
 
@@ -27,8 +23,6 @@ class TestRutas:
 
 
 class TestCargaGeoespacial:
-    """Requiere que los archivos .geojson existan en data/raw/."""
-
     @pytest.mark.slow
     def test_cargar_estaciones_devuelve_geodataframe(self):
         from integrabog.data.loader import cargar_estaciones

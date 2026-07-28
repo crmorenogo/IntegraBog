@@ -1,8 +1,4 @@
-// IntegraBog - frontend minimo (sin build step, solo fetch + Leaflet)
-// Todas las llamadas van a la misma API que sirve este archivo, por eso
-// las URLs son relativas ('/api/...').
-
-const mapa = L.map('mapa').setView([4.65, -74.1], 11); // Bogota aprox.
+const mapa = L.map('mapa').setView([4.65, -74.1], 11);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap',
@@ -33,8 +29,6 @@ async function obtenerJSON(url) {
   return resp.json();
 }
 
-// --- Carga inicial: estaciones + red actual ---
-
 async function cargarEstaciones() {
   mostrarEstado('Cargando estaciones...');
   const estaciones = await obtenerJSON('/api/estaciones');
@@ -50,8 +44,8 @@ async function cargarEstaciones() {
 
     L.circleMarker([est.lat, est.lon], {
       radius: 4,
-      color: '#38bdf8',
-      fillColor: '#38bdf8',
+      color: '#DA291C',
+      fillColor: '#DA291C',
       fillOpacity: 0.9,
       weight: 1,
     })
@@ -74,42 +68,67 @@ async function cargarRedActual() {
         [a.origen_lat, a.origen_lon],
         [a.destino_lat, a.destino_lon],
       ],
-      { color: '#475569', weight: 2, opacity: 0.7 }
+      { color: '#DA291C', weight: 2, opacity: 0.55 }
     ).addTo(capaRedActual);
   }
 }
 
-// --- Dibujar un resultado de sugerencia ---
+const COLORES_RUTAS = [
+  '#FFD100',
+  '#3B82F6',
+  '#22C55E',
+  '#A855F7',
+  '#F97316',
+  '#EC4899',
+  '#06B6D4',
+  '#84CC16',
+];
 
-function dibujarSugerencia(r) {
+let _indiceColorGlobal = 0;
+
+function siguienteColorRuta() {
+  const c = COLORES_RUTAS[_indiceColorGlobal % COLORES_RUTAS.length];
+  _indiceColorGlobal++;
+  return c;
+}
+
+function resetearIndiceColor() {
+  _indiceColorGlobal = 0;
+}
+
+function dibujarSugerencia(r, colorRuta = '#FFD100') {
   if (r.geometria_actual_lonlat) {
     const esMejorActual = r.recomendacion === 'ruta_actual';
     L.polyline(
       r.geometria_actual_lonlat.map(([lon, lat]) => [lat, lon]),
       {
-        color: '#facc15',
-        weight: esMejorActual ? 5 : 3,
-        dashArray: esMejorActual ? null : '6 6',
-        opacity: esMejorActual ? 1 : 0.7,
+        color: '#DA291C',
+        weight: esMejorActual ? 5 : 2,
+        dashArray: esMejorActual ? null : '8 6',
+        opacity: esMejorActual ? 1 : 0.5,
       }
     )
-      .bindTooltip(`Ruta actual: ${r.tiempo_actual_min} min${esMejorActual ? ' ★ RECOMENDADA' : ''}`)
+      .bindTooltip(`Red actual: ${r.tiempo_actual_min} min${esMejorActual ? ' (mejor opción)' : ''}`)
       .addTo(capaResultados);
   }
 
   const esMejorNueva = r.recomendacion === 'ruta_nueva';
   L.polyline(
     r.geometria_lonlat.map(([lon, lat]) => [lat, lon]),
-    { color: '#3b82f6', weight: esMejorNueva ? 5 : 4, opacity: esMejorNueva ? 1 : 0.6 }
+    {
+      color: colorRuta,
+      weight: esMejorNueva ? 5 : 3,
+      opacity: esMejorNueva ? 1 : 0.65,
+    }
   )
-    .bindTooltip(`Ruta nueva propuesta: ${r.tiempo_nueva_ruta_min} min${esMejorNueva ? ' ★ RECOMENDADA' : ''}`)
+    .bindTooltip(`Ruta propuesta: ${r.tiempo_nueva_ruta_min} min${esMejorNueva ? ' (mejor opción)' : ''}`)
     .addTo(capaResultados);
 
   for (const [lon, lat] of r.estaciones_intermedias_lonlat) {
     L.circleMarker([lat, lon], {
-      radius: 7,
-      color: '#ca8a04',
-      fillColor: '#fef08a',
+      radius: 6,
+      color: colorRuta,
+      fillColor: '#1A1A1A',
       fillOpacity: 1,
       weight: 2,
     })
@@ -118,19 +137,20 @@ function dibujarSugerencia(r) {
   }
 }
 
-function tarjetaResultado(r) {
+function tarjetaResultado(r, colorBorde = '#DA291C') {
   const div = document.createElement('div');
   div.className = 'tarjeta-resultado';
+  div.style.borderLeftColor = colorBorde;
 
   let lineaAhorro;
   let recomendacionHTML = '';
 
   if (r.recomendacion === 'ruta_actual') {
-    recomendacionHTML = '<div class="recomendacion actual">✅ La ruta actual de TransMilenio ya es la mejor opción</div>';
+    recomendacionHTML = '<div class="recomendacion actual">La red actual ya es la mejor opción</div>';
   } else if (r.recomendacion === 'ruta_nueva') {
-    recomendacionHTML = '<div class="recomendacion nueva">💡 Construir una nueva troncal reduciría los tiempos</div>';
+    recomendacionHTML = '<div class="recomendacion nueva">Una troncal nueva reduciría los tiempos</div>';
   } else {
-    recomendacionHTML = '<div class="recomendacion sin-conexion">🔌 No hay conexión directa por TransMilenio hoy</div>';
+    recomendacionHTML = '<div class="recomendacion sin-conexion">Sin conexión troncal directa</div>';
   }
 
   if (r.ahorro_min === null || r.ahorro_min === undefined) {
@@ -152,8 +172,6 @@ function tarjetaResultado(r) {
   return div;
 }
 
-// --- Acciones de los botones ---
-
 document.getElementById('btn-sugerir').addEventListener('click', async () => {
   const origen = elOrigen.value;
   const destino = elDestino.value;
@@ -168,11 +186,13 @@ document.getElementById('btn-sugerir').addEventListener('click', async () => {
     const r = await obtenerJSON(
       `/api/sugerir?origen=${encodeURIComponent(origen)}&destino=${encodeURIComponent(destino)}`
     );
-    dibujarSugerencia(r);
+    resetearIndiceColor();
+    const colorRuta = siguienteColorRuta();
+    dibujarSugerencia(r, colorRuta);
 
     elResultado.classList.remove('oculto');
     elResultadoContenido.innerHTML = '';
-    elResultadoContenido.appendChild(tarjetaResultado(r));
+    elResultadoContenido.appendChild(tarjetaResultado(r, colorRuta));
 
     const bounds = L.latLngBounds(r.geometria_lonlat.map(([lon, lat]) => [lat, lon]));
     mapa.fitBounds(bounds, { padding: [30, 30] });
@@ -194,10 +214,12 @@ document.getElementById('btn-pares').addEventListener('click', async () => {
     elResultado.classList.remove('oculto');
     elResultadoContenido.innerHTML = '';
 
+    resetearIndiceColor();
     const todosLosPuntos = [];
     for (const r of resultados) {
-      dibujarSugerencia(r);
-      elResultadoContenido.appendChild(tarjetaResultado(r));
+      const colorRuta = siguienteColorRuta();
+      dibujarSugerencia(r, colorRuta);
+      elResultadoContenido.appendChild(tarjetaResultado(r, colorRuta));
       todosLosPuntos.push(...r.geometria_lonlat.map(([lon, lat]) => [lat, lon]));
     }
 

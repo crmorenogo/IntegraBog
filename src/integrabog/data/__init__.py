@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring,invalid-name
 """
 Carga y reproyección de datos geoespaciales.
 

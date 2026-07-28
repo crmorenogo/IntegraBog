@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring,invalid-name
 """
 Algoritmos de diseño de rutas sobre la red multicapa de TransMilenio.
 

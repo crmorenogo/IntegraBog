@@ -1,8 +1,3 @@
-"""
-Lógica de acople (snapping) espacial: para cada estación, encuentra el
-tramo de trazado geométricamente más cercano y su posición de arco.
-"""
-
 import geopandas as gpd
 import pandas as pd
 
@@ -10,9 +5,6 @@ from integrabog.config import TOLERANCIA_ACOPLE_M
 
 
 def explotar_tramos(trazado: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    """Descompone cada MultiLineString en LineStrings individuales,
-    conservando los atributos originales (id_trazado, nom_tronc, ...)
-    en cada pieza resultante."""
     tramos = trazado.explode(index_parts=False).reset_index(drop=True)
     tramos["tramo_id"] = tramos.index
     return tramos
@@ -23,9 +15,6 @@ def acoplar_estaciones(
     tramos: gpd.GeoDataFrame,
     tolerancia_m: float = TOLERANCIA_ACOPLE_M,
 ) -> pd.DataFrame:
-    """Para cada estación, busca el tramo más cercano (mínimo de
-    L.distance(P) sobre todos los tramos candidatos) y calcula su
-    posición de arco 's' sobre ese tramo."""
     filas = []
     for _, est in estaciones.iterrows():
         punto = est.geometry

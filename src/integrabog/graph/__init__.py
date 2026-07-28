@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring,invalid-name
 """
 Construcción y análisis de la red de TransMilenio en tres capas:
 

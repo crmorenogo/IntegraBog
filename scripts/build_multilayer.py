@@ -1,9 +1,3 @@
-"""
-Orquesta la construcción del grafo multicapa: recalcula el macro (rápido,
-es solo procesar 150 estaciones locales) y carga el micro desde caché,
-los combina, y reporta estadísticas de validación.
-"""
-
 from collections import Counter
 
 import numpy as np
@@ -22,19 +16,19 @@ def main():
     G_micro = obtener_malla_vial()
 
     print("\nFusionando en grafo multicapa...")
-    G_multicapa = construir_grafo_multicapa(G_macro, G_micro)
+    g_multicapa = construir_grafo_multicapa(G_macro, G_micro)
 
     print("\n--- RESUMEN DEL GRAFO MULTICAPA ---")
-    diagnosticar_grafo(G_multicapa)
+    diagnosticar_grafo(g_multicapa)
 
-    conteo_capas = Counter(d.get("layer") for _, _, d in G_multicapa.edges(data=True))
+    conteo_capas = Counter(d.get("layer") for _, _, d in g_multicapa.edges(data=True))
     print(f"Aristas por capa: {dict(conteo_capas)}")
 
     print("\n--- DIAGNÓSTICO COMPARATIVO SOACHA (ANTES VS AHORA) ---")
 
     pesos = [
         d["weight"]
-        for u, v, d in G_multicapa.edges(data=True)
+        for u, v, d in g_multicapa.edges(data=True)
         if d.get("layer") == "transferencia" and str(u).startswith("macro_")
     ]
     arr = np.array(pesos)
@@ -52,28 +46,28 @@ def main():
     }
 
     print("\nLas 5 que estaban mal antes de incluir Soacha, antes vs ahora:")
-    for u, _v, d in G_multicapa.edges(data=True):
+    for u, _v, d in g_multicapa.edges(data=True):
         if d.get("layer") != "transferencia" or not str(u).startswith("macro_"):
             continue
-        nombre = G_multicapa.nodes[u].get("nombre", "")
+        nombre = g_multicapa.nodes[u].get("nombre", "")
         if nombre in antes:
             print(f"  {nombre}: {antes[nombre]:.1f} m -> {d['weight']:.1f} m")
 
     peores = sorted(
         (
             (d["weight"], u)
-            for u, v, d in G_multicapa.edges(data=True)
+            for u, v, d in g_multicapa.edges(data=True)
             if d.get("layer") == "transferencia" and str(u).startswith("macro_")
         ),
         reverse=True,
     )[:5]
     print("\nLas 5 estaciones más lejos AHORA:")
     for peso, nodo in peores:
-        nombre = G_multicapa.nodes[nodo]["nombre"]
-        tipo = G_multicapa.nodes[nodo].get("tipo_estacion", "Desconocido")
+        nombre = g_multicapa.nodes[nodo]["nombre"]
+        tipo = g_multicapa.nodes[nodo].get("tipo_estacion", "Desconocido")
         print(f"  {nombre}: {peso:.1f} m (tipo_estacion={tipo})")
 
-    return G_multicapa
+    return g_multicapa
 
 
 if __name__ == "__main__":

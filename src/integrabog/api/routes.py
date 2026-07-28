@@ -1,10 +1,3 @@
-"""
-Rutas HTTP de la API de IntegraBog.
-
-Todas las rutas leen el grafo multicapa desde `request.app.state.grafo`
-(ver state.py y main.py) -- nunca lo reconstruyen, solo lo consultan.
-"""
-
 from collections import Counter
 
 import networkx as nx
@@ -36,8 +29,6 @@ def _a_lonlat(x: float, y: float) -> tuple[float, float]:
 
 
 def _resultado_a_schema(r: dict, G: nx.MultiDiGraph) -> SugerenciaOut:
-    """Convierte el dict que devuelve sugerir_nueva_troncal en el schema
-    de salida, agregando los nombres legibles de las estaciones."""
     ts = r["tiempo_actual_min"]
     tn = r["tiempo_nueva_ruta_min"]
     if ts is None:
@@ -70,8 +61,6 @@ def health():
 
 @router.get("/estaciones", response_model=list[EstacionOut])
 def listar_estaciones(request: Request):
-    """Todas las estaciones de TransMilenio, para poblar selectores y
-    marcadores en el mapa."""
     G = _estado(request).grafo
     estaciones = []
     for nodo, datos in G.nodes(data=True):
@@ -90,14 +79,17 @@ def listar_estaciones(request: Request):
             )
         )
     estaciones.sort(key=lambda e: e.nombre)
-    return estaciones
+    vistos: set[str] = set()
+    unicas: list[EstacionOut] = []
+    for e in estaciones:
+        if e.nombre not in vistos:
+            vistos.add(e.nombre)
+            unicas.append(e)
+    return unicas
 
 
 @router.get("/red-actual", response_model=list[AristaRedActualOut])
 def red_actual(request: Request):
-    """Aristas de la red troncal existente (linea recta entre estaciones
-    consecutivas), para dibujar la red base en el mapa antes de mostrar
-    ninguna sugerencia."""
     G = _estado(request).grafo
     aristas = []
     vistas = set()
@@ -106,7 +98,7 @@ def red_actual(request: Request):
             continue
         clave = frozenset((u, v))
         if clave in vistas:
-            continue  # las aristas macro son bidireccionales -> no duplicar en el mapa
+            continue
         vistas.add(clave)
 
         du, dv = G.nodes[u], G.nodes[v]
@@ -130,9 +122,6 @@ def sugerir(
     origen: str = Query(..., description="ID, numero o nombre parcial de la estacion origen"),
     destino: str = Query(..., description="ID, numero o nombre parcial de la estacion destino"),
 ):
-    """Compara el tiempo actual por la red troncal contra una ruta nueva
-    propuesta sobre la malla vial, entre dos estaciones dadas por el
-    usuario."""
     G = _estado(request).grafo
     try:
         resultado = sugerir_nueva_troncal(G, origen, destino)
@@ -151,8 +140,6 @@ def pares_criticos(
     request: Request,
     top_n: int = Query(5, ge=1, le=20, description="Cuantos pares candidatos devolver"),
 ):
-    """Encuentra automaticamente los pares de estaciones mas prometedores
-    para una troncal nueva, sin que el usuario elija origen/destino."""
     G = _estado(request).grafo
     resultados = identificar_pares_criticos(G, top_n=top_n)
     return [_resultado_a_schema(r, G) for r in resultados]
@@ -160,7 +147,6 @@ def pares_criticos(
 
 @router.get("/diagnostico", response_model=DiagnosticoOut)
 def diagnostico(request: Request):
-    """Resumen del grafo multicapa: tamano, conexidad y aristas por capa."""
     estado = _estado(request)
     G = estado.grafo
     G_no_dirigido = G.to_undirected()
