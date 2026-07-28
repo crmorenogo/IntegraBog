@@ -93,19 +93,21 @@ function dibujarSugerencia(r) {
 
   L.polyline(
     r.geometria_lonlat.map(([lon, lat]) => [lat, lon]),
-    { color: '#22c55e', weight: 4 }
+    { color: '#3b82f6', weight: 4, opacity: 0.85 }
   )
     .bindTooltip(`Ruta nueva propuesta: ${r.tiempo_nueva_ruta_min} min`)
     .addTo(capaResultados);
 
   for (const [lon, lat] of r.estaciones_intermedias_lonlat) {
     L.circleMarker([lat, lon], {
-      radius: 6,
-      color: '#eab308',
+      radius: 7,
+      color: '#ca8a04',
       fillColor: '#fef08a',
       fillOpacity: 1,
       weight: 2,
-    }).addTo(capaResultados);
+    })
+      .bindTooltip('Parada sugerida')
+      .addTo(capaResultados);
   }
 }
 
