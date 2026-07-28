@@ -183,3 +183,68 @@ button:disabled {
   height: 3px;
   display: inline-block;
 }
+
+/* --- simulación what‑if de pares críticos --- */
+
+.banner-simulacion {
+  background: #fbbf24;
+  color: #1a1a2e;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 14px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.banner-simulacion .banner-texto {
+  margin-bottom: 8px;
+}
+
+.btn-restaurar {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: #ef4444;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-restaurar:hover {
+  background: #dc2626;
+}
+
+.btn-simular {
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  background: #1e3a5f;
+  color: #93c5fd;
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-simular:hover {
+  background: #1e40af;
+}
+
+.btn-simular.activado {
+  border-color: #22c55e;
+  background: #14532d;
+  color: #86efac;
+  cursor: default;
+}
+
+.nota-simulacion {
+  font-size: 0.72rem;
+  color: #fbbf24;
+  margin-top: 4px;
+  font-style: italic;
+}

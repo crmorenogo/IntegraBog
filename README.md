@@ -45,8 +45,12 @@ pip install .
 ### API REST
 
 ```bash
-uv run uvicorn integrabog.api.main:app --reload
+uv run uvicorn integrabog.api.main:app --reload --reload-exclude '.venv/**'
 ```
+
+> Si usas un entorno virtual (`.venv/`) dentro del proyecto, el flag
+> `--reload-exclude` evita que uvicorn reinicie cada vez que se modifica
+> algún archivo de las dependencias instaladas.
 
 - API: http://localhost:8000/
 - Documentación interactiva: http://localhost:8000/docs

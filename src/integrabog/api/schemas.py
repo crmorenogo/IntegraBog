@@ -59,6 +59,40 @@ class SugerenciaOut(BaseModel):
         ),
     )
 
+    simulacion_activa: bool = Field(
+        False,
+        description="True si el resultado se calculó sobre una red aumentada "
+        "con una conexión what‑if activa.",
+    )
+
+
+# ---------------------------------------------------------------------------
+# schemas para el sistema de simulación what‑if de pares críticos
+# ---------------------------------------------------------------------------
+
+
+class ActivacionIn(BaseModel):
+    """Datos que manda el frontend para activar una simulación what‑if."""
+
+    estacion_origen: str
+    estacion_destino: str
+    nombre_origen: str
+    nombre_destino: str
+    tiempo_nueva_ruta_min: float
+    geometria_lonlat: list[list[float]]
+    estaciones_intermedias_lonlat: list[list[float]]
+
+
+class ConexionActivaOut(BaseModel):
+    """Estado actual de la simulación what‑if."""
+
+    activa: bool
+    nombre_origen: str | None = None
+    nombre_destino: str | None = None
+    tiempo_nueva_ruta_min: float | None = None
+    geometria_lonlat: list[list[float]] | None = None
+    estaciones_intermedias_lonlat: list[list[float]] | None = None
+
 
 class ErrorOut(BaseModel):
     detalle: str

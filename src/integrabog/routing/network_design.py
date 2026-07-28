@@ -204,6 +204,8 @@ def identificar_pares_criticos(G_multicapa: nx.MultiDiGraph, top_n: int = 5) -> 
     for u, v, d in G_multicapa.edges(data=True):
         if d.get("layer") != "macro":
             continue
+        if d.get("virtual") or d.get("nom_tronc") == "SIMULACIÓN":
+            continue  # arista inyectada por el sistema what‑if → no agrupar
         nom = d.get("nom_tronc")
         if not nom:
             continue
