@@ -1,16 +1,7 @@
-"""
-Esquemas Pydantic: definen la forma exacta de lo que la API recibe y
-devuelve. Sirven como contrato explicito para quien consuma la API
-(el frontend, o cualquier otro cliente) y ademas generan la
-documentacion automatica en /docs.
-"""
-
 from pydantic import BaseModel, Field
 
 
 class EstacionOut(BaseModel):
-    """Una estacion de TransMilenio, lista para mostrar en un mapa."""
-
     id: str = Field(..., description="ID interno del nodo, ej. 'macro_4107'")
     codigo: int = Field(..., description="Codigo de nodo original (cod_nodo)")
     nombre: str
@@ -26,8 +17,6 @@ class CoordenadaOut(BaseModel):
 
 
 class SugerenciaOut(BaseModel):
-    """Resultado de comparar la red actual contra una ruta nueva propuesta."""
-
     estacion_origen: str
     estacion_destino: str
     nombre_origen: str
@@ -73,8 +62,6 @@ class DiagnosticoOut(BaseModel):
 
 
 class AristaRedActualOut(BaseModel):
-    """Una arista de la red troncal existente, para dibujar el mapa base."""
-
     origen_lon: float
     origen_lat: float
     destino_lon: float

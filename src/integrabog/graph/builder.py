@@ -1,14 +1,9 @@
-"""
-Construcción de nodos y aristas del grafo de estaciones troncales.
-"""
-
 import geopandas as gpd
 import networkx as nx
 import pandas as pd
 
 
 def construir_nodos(G: nx.DiGraph, estaciones: gpd.GeoDataFrame) -> None:
-    """Agrega una estación por nodo."""
     for _, est in estaciones.iterrows():
         G.add_node(
             int(est["cod_nodo"]),
@@ -22,13 +17,6 @@ def construir_nodos(G: nx.DiGraph, estaciones: gpd.GeoDataFrame) -> None:
 
 
 def construir_aristas(G: nx.DiGraph, acoples: pd.DataFrame) -> None:
-    """Ordena las estaciones acopladas a cada tramo por su posición de
-    arco 's' y conecta cada par de estaciones consecutivas.
-
-    Al estar ordenadas por 's', dos estaciones consecutivas no tienen
-    ninguna otra estación acoplada entre ellas sobre ese mismo tramo
-    físico: son, por construcción, adyacentes en el grafo.
-    """
     for _, grupo in acoples.groupby("tramo_id"):
         grupo = grupo.sort_values("s").reset_index(drop=True)
         for i in range(len(grupo) - 1):

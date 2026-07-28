@@ -1,8 +1,4 @@
-// IntegraBog - frontend minimo (sin build step, solo fetch + Leaflet)
-// Todas las llamadas van a la misma API que sirve este archivo, por eso
-// las URLs son relativas ('/api/...').
-
-const mapa = L.map('mapa').setView([4.65, -74.1], 11); // Bogota aprox.
+const mapa = L.map('mapa').setView([4.65, -74.1], 11);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap',
@@ -32,8 +28,6 @@ async function obtenerJSON(url) {
   }
   return resp.json();
 }
-
-// --- Carga inicial: estaciones + red actual ---
 
 async function cargarEstaciones() {
   mostrarEstado('Cargando estaciones...');
@@ -79,17 +73,15 @@ async function cargarRedActual() {
   }
 }
 
-// --- paleta de colores para rutas (se cicla sobre este arreglo) ---
-
 const COLORES_RUTAS = [
-  '#FFD100',  // amarillo
-  '#3B82F6',  // azul
-  '#22C55E',  // verde
-  '#A855F7',  // morado
-  '#F97316',  // naranja
-  '#EC4899',  // rosado
-  '#06B6D4',  // cian
-  '#84CC16',  // lima
+  '#FFD100',
+  '#3B82F6',
+  '#22C55E',
+  '#A855F7',
+  '#F97316',
+  '#EC4899',
+  '#06B6D4',
+  '#84CC16',
 ];
 
 let _indiceColorGlobal = 0;
@@ -104,13 +96,7 @@ function resetearIndiceColor() {
   _indiceColorGlobal = 0;
 }
 
-// --- Dibujar un resultado de sugerencia ---
-
 function dibujarSugerencia(r, colorRuta = '#FFD100') {
-  // Cuando hay simulación activa, la geometría de la red actual
-  // contiene aristas virtuales que se dibujan como líneas rectas
-  // a través de edificios — la ocultamos y mostramos solo la ruta
-  // propuesta que sí sigue las calles reales.
   if (r.geometria_actual_lonlat) {
     const esMejorActual = r.recomendacion === 'ruta_actual';
     L.polyline(
@@ -185,8 +171,6 @@ function tarjetaResultado(r, colorBorde = '#DA291C') {
   `;
   return div;
 }
-
-// --- Acciones de los botones ---
 
 document.getElementById('btn-sugerir').addEventListener('click', async () => {
   const origen = elOrigen.value;

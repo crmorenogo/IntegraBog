@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring,invalid-name
 """
 IntegraBog — herramientas de análisis y visualización para la red de
 TransMilenio en Bogotá.

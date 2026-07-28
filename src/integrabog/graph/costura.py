@@ -1,9 +1,3 @@
-"""
-Costura de tramos: repara las adyacencias que Paso 8 no puede ver
-porque quedan del otro lado de una brecha de digitalización o de una
-cadena de tramos sin ninguna estación.
-"""
-
 import math
 from collections import defaultdict
 
@@ -15,9 +9,6 @@ import pandas as pd
 def construir_grafo_conectores(
     tramos: gpd.GeoDataFrame, acoples: pd.DataFrame, eps: float
 ) -> nx.Graph:
-    """Grafo auxiliar formado solo por los extremos de cada tramo.
-    'paso': un tramo sin estaciones se cruza directo (peso = su longitud).
-    'brecha': dos extremos de tramos distintos a menos de eps metros."""
     H = nx.Graph()
     coords_extremo = {}
     for _, t in tramos.iterrows():
@@ -43,11 +34,6 @@ def construir_grafo_conectores(
 
 
 def hallar_estaciones_expuestas(tramos: gpd.GeoDataFrame, acoples: pd.DataFrame) -> list[tuple]:
-    """La primera y la última estación (por 's') de cada tramo son sus
-    'lados expuestos': el punto por donde ese tramo podría seguir
-    conectándose con otro. No se limita a tramos con una sola estación
-    — cualquier tramo con 2+ estaciones también tiene dos lados
-    expuestos en sus extremos, aunque ya esté conectado por dentro."""
     expuestas = []
     for tramo_id, grupo in acoples.groupby("tramo_id"):
         grupo = grupo.sort_values("s").reset_index(drop=True)
@@ -61,9 +47,6 @@ def hallar_estaciones_expuestas(tramos: gpd.GeoDataFrame, acoples: pd.DataFrame)
 def calcular_aristas_costura(
     G: nx.DiGraph, tramos: gpd.GeoDataFrame, acoples: pd.DataFrame, eps: float = 5.0
 ) -> int:
-    """Agrega al grafo las aristas que faltan entre estaciones separadas
-    por una brecha de digitalización o por una cadena de tramos vacíos.
-    Devuelve cuántos pares nuevos se agregaron."""
     H = construir_grafo_conectores(tramos, acoples, eps)
     expuestas = hallar_estaciones_expuestas(tramos, acoples)
 

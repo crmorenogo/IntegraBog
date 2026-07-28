@@ -1,12 +1,8 @@
-"""Tests para el módulo graph.macro — construcción del grafo macro."""
-
 import networkx as nx
 import pytest
 
 
 class TestConstruirGrafoMacro:
-    """Prueba el pipeline completo desde datos crudos hasta grafo macro."""
-
     @pytest.mark.slow
     def test_devuelve_digrafo(self):
         from integrabog.graph.macro import construir_grafo_macro

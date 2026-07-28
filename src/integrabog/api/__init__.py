@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring,invalid-name
 """
 Módulo API — Punto de entrada HTTP y definición de rutas.
 

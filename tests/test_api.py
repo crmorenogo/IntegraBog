@@ -1,11 +1,8 @@
-"""Tests de integración para la API REST (FastAPI TestClient)."""
-
 import pytest
 
 
 @pytest.fixture(scope="module")
 def client():
-    """Levanta una instancia de la API con el grafo multicapa real."""
     from fastapi.testclient import TestClient
 
     from integrabog.api.main import app
@@ -15,8 +12,6 @@ def client():
 
 
 class TestHealth:
-    """Endpoint /api/health debe responder siempre."""
-
     def test_health_returns_ok(self, client):
         resp = client.get("/api/health")
         assert resp.status_code == 200
@@ -25,8 +20,6 @@ class TestHealth:
 
 @pytest.mark.slow
 class TestEstaciones:
-    """/api/estaciones devuelve la lista completa."""
-
     def test_devuelve_lista(self, client):
         resp = client.get("/api/estaciones")
         assert resp.status_code == 200
@@ -45,8 +38,6 @@ class TestEstaciones:
 
 @pytest.mark.slow
 class TestDiagnostico:
-    """/api/diagnostico devuelve métricas del grafo."""
-
     def test_devuelve_metricas(self, client):
         resp = client.get("/api/diagnostico")
         assert resp.status_code == 200
@@ -60,8 +51,6 @@ class TestDiagnostico:
 
 @pytest.mark.slow
 class TestSugerir:
-    """/api/sugerir calcula rutas entre estaciones."""
-
     def test_sugerir_con_nombres_validos(self, client):
         resp = client.get("/api/sugerir?origen=Portal&destino=Centro")
         assert resp.status_code == 200

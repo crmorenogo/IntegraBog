@@ -1,5 +1,3 @@
-"""Tests para los módulos de config y constantes."""
-
 from integrabog.config import (
     CRS_METRICO,
     RAIZ_PROYECTO,
@@ -9,8 +7,6 @@ from integrabog.config import (
 
 
 class TestConfig:
-    """Valores de configuración deben ser coherentes."""
-
     def test_raiz_es_directorio(self):
         assert RAIZ_PROYECTO.is_dir()
 
@@ -25,8 +21,6 @@ class TestConfig:
 
 
 class TestRutasProyecto:
-    """Verifica que la estructura de carpetas existe."""
-
     def test_data_raw_existe(self):
         assert (RAIZ_PROYECTO / "data" / "raw").exists()
 
