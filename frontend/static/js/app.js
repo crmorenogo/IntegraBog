@@ -115,7 +115,7 @@ function dibujarSugerencia(r) {
         opacity: esMejorActual ? 1 : 0.5,
       }
     )
-      .bindTooltip(`Ruta actual TM: ${r.tiempo_actual_min} min${esMejorActual ? ' — MEJOR OPCIÓN' : ''}`)
+      .bindTooltip(`Red actual: ${r.tiempo_actual_min} min${esMejorActual ? ' (mejor opción)' : ''}`)
       .addTo(capaResultados);
   }
 
@@ -128,7 +128,7 @@ function dibujarSugerencia(r) {
       opacity: esMejorNueva ? 1 : 0.65,
     }
   )
-    .bindTooltip(`Ruta nueva propuesta: ${r.tiempo_nueva_ruta_min} min${esMejorNueva ? ' — MEJOR OPCIÓN' : ''}`)
+    .bindTooltip(`Ruta propuesta: ${r.tiempo_nueva_ruta_min} min${esMejorNueva ? ' (mejor opción)' : ''}`)
     .addTo(capaResultados);
 
   for (const [lon, lat] of r.estaciones_intermedias_lonlat) {
@@ -152,11 +152,11 @@ function tarjetaResultado(r) {
   let recomendacionHTML = '';
 
   if (r.recomendacion === 'ruta_actual') {
-    recomendacionHTML = '<div class="recomendacion actual">✅ La ruta actual de TransMilenio ya es la mejor opción</div>';
+    recomendacionHTML = '<div class="recomendacion actual">La red actual ya es la mejor opción</div>';
   } else if (r.recomendacion === 'ruta_nueva') {
-    recomendacionHTML = '<div class="recomendacion nueva">💡 Construir una nueva troncal reduciría los tiempos</div>';
+    recomendacionHTML = '<div class="recomendacion nueva">Una troncal nueva reduciría los tiempos</div>';
   } else {
-    recomendacionHTML = '<div class="recomendacion sin-conexion">🔌 No hay conexión directa por TransMilenio hoy</div>';
+    recomendacionHTML = '<div class="recomendacion sin-conexion">Sin conexión troncal directa</div>';
   }
 
   if (r.ahorro_min === null || r.ahorro_min === undefined) {
@@ -174,9 +174,9 @@ function tarjetaResultado(r) {
     <div>Tiempo ruta nueva: ${r.tiempo_nueva_ruta_min} min</div>
     <div>${lineaAhorro}</div>
     ${r.distancia_geometrica_m ? `<div>Distancia en línea recta: ${r.distancia_geometrica_m} m</div>` : ''}
-    ${r.simulacion_activa ? '<div class="nota-simulacion">📡 Calculado sobre red simulada</div>' : ''}
-    <button class="btn-simular activado" style="display:none" disabled>✅ Activado</button>
-    <button class="btn-simular">🔌 Activar simulación</button>
+    ${r.simulacion_activa ? '<div class="nota-simulacion">Resultado con red simulada</div>' : ''}
+    <button class="btn-simular activado" style="display:none" disabled>Activado</button>
+    <button class="btn-simular">Activar simulación</button>
   `;
 
   // Configurar botones de activación
@@ -246,7 +246,7 @@ async function activarSimulacion(r) {
       }
     }
 
-    mostrarEstado('Simulación activa. Prueba el formulario "Sugerir troncal" para ver el efecto.');
+    mostrarEstado('Simulación activa. El formulario «Sugerir troncal» ahora opera sobre la red aumentada.');
   } catch (err) {
     mostrarEstado(err.message, true);
   }
@@ -313,7 +313,7 @@ document.getElementById('btn-sugerir').addEventListener('click', async () => {
     if (r.simulacion_activa && simulacionDatos) {
       const nota = document.createElement('div');
       nota.className = 'nota-simulacion';
-      nota.textContent = `📡 Calculado sobre red simulada (${simulacionDatos.nombre_origen} ↔ ${simulacionDatos.nombre_destino})`;
+      nota.textContent = `Red simulada (${simulacionDatos.nombre_origen} ↔ ${simulacionDatos.nombre_destino})`;
       elResultadoContenido.appendChild(nota);
     }
 
@@ -348,22 +348,13 @@ document.getElementById('btn-pares').addEventListener('click', async () => {
       mapa.fitBounds(L.latLngBounds(todosLosPuntos), { padding: [30, 30] });
     }
 
-    // Guía de simulación — aparece una sola vez
+    // Guía de simulación — una sola vez
     if (!window._guiaSimulacionMostrada) {
       window._guiaSimulacionMostrada = true;
       const guia = document.createElement('div');
-      guia.className = 'tarjeta-resultado';
-      guia.style.borderLeftColor = '#FFD100';
-      guia.innerHTML = `
-        <div class="titulo" style="color:#FFD100">¿Cómo usar la simulación?</div>
-        <div style="font-size:0.74rem;line-height:1.6;color:#bbb">
-          1. Haz clic en <b style="color:#DA291C">Activar simulación</b> en cualquier par.<br>
-          2. El sistema agrega esa conexión <i>como si existiera</i>.<br>
-          3. Ve a <b>Sugerir troncal</b> y compara cualquier ruta.<br>
-          4. Verás cómo cambian los tiempos con la nueva conexión.<br>
-          5. Haz clic en <b style="color:#FFD100">Restaurar</b> para volver a la red real.
-        </div>
-      `;
+      guia.className = 'nota-simulacion';
+      guia.style.padding = '6px 0';
+      guia.textContent = 'Usa «Activar simulación» en cualquier par para evaluar su impacto en otras rutas.';
       elResultadoContenido.appendChild(guia);
     }
 
