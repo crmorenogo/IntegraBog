@@ -72,8 +72,8 @@ async function cargarEstaciones() {
 
     L.circleMarker([est.lat, est.lon], {
       radius: 4,
-      color: '#38bdf8',
-      fillColor: '#38bdf8',
+      color: '#DA291C',
+      fillColor: '#DA291C',
       fillOpacity: 0.9,
       weight: 1,
     })
@@ -96,7 +96,7 @@ async function cargarRedActual() {
         [a.origen_lat, a.origen_lon],
         [a.destino_lat, a.destino_lon],
       ],
-      { color: '#475569', weight: 2, opacity: 0.7 }
+      { color: '#DA291C', weight: 2, opacity: 0.55 }
     ).addTo(capaRedActual);
   }
 }
@@ -109,29 +109,33 @@ function dibujarSugerencia(r) {
     L.polyline(
       r.geometria_actual_lonlat.map(([lon, lat]) => [lat, lon]),
       {
-        color: '#facc15',
-        weight: esMejorActual ? 5 : 3,
-        dashArray: esMejorActual ? null : '6 6',
-        opacity: esMejorActual ? 1 : 0.7,
+        color: '#DA291C',
+        weight: esMejorActual ? 5 : 2,
+        dashArray: esMejorActual ? null : '8 6',
+        opacity: esMejorActual ? 1 : 0.5,
       }
     )
-      .bindTooltip(`Ruta actual: ${r.tiempo_actual_min} min${esMejorActual ? ' ★ RECOMENDADA' : ''}`)
+      .bindTooltip(`Ruta actual TM: ${r.tiempo_actual_min} min${esMejorActual ? ' — MEJOR OPCIÓN' : ''}`)
       .addTo(capaResultados);
   }
 
   const esMejorNueva = r.recomendacion === 'ruta_nueva';
   L.polyline(
     r.geometria_lonlat.map(([lon, lat]) => [lat, lon]),
-    { color: '#3b82f6', weight: esMejorNueva ? 5 : 4, opacity: esMejorNueva ? 1 : 0.6 }
+    {
+      color: '#FFD100',
+      weight: esMejorNueva ? 5 : 3,
+      opacity: esMejorNueva ? 1 : 0.65,
+    }
   )
-    .bindTooltip(`Ruta nueva propuesta: ${r.tiempo_nueva_ruta_min} min${esMejorNueva ? ' ★ RECOMENDADA' : ''}`)
+    .bindTooltip(`Ruta nueva propuesta: ${r.tiempo_nueva_ruta_min} min${esMejorNueva ? ' — MEJOR OPCIÓN' : ''}`)
     .addTo(capaResultados);
 
   for (const [lon, lat] of r.estaciones_intermedias_lonlat) {
     L.circleMarker([lat, lon], {
-      radius: 7,
-      color: '#ca8a04',
-      fillColor: '#fef08a',
+      radius: 6,
+      color: '#FFD100',
+      fillColor: '#1A1A1A',
       fillOpacity: 1,
       weight: 2,
     })
@@ -242,7 +246,7 @@ async function activarSimulacion(r) {
       }
     }
 
-    mostrarEstado('Simulación activa. Probá el formulario "Sugerir troncal" para ver el efecto.');
+    mostrarEstado('Simulación activa. Prueba el formulario "Sugerir troncal" para ver el efecto.');
   } catch (err) {
     mostrarEstado(err.message, true);
   }
@@ -342,6 +346,25 @@ document.getElementById('btn-pares').addEventListener('click', async () => {
 
     if (todosLosPuntos.length) {
       mapa.fitBounds(L.latLngBounds(todosLosPuntos), { padding: [30, 30] });
+    }
+
+    // Guía de simulación — aparece una sola vez
+    if (!window._guiaSimulacionMostrada) {
+      window._guiaSimulacionMostrada = true;
+      const guia = document.createElement('div');
+      guia.className = 'tarjeta-resultado';
+      guia.style.borderLeftColor = '#FFD100';
+      guia.innerHTML = `
+        <div class="titulo" style="color:#FFD100">¿Cómo usar la simulación?</div>
+        <div style="font-size:0.74rem;line-height:1.6;color:#bbb">
+          1. Haz clic en <b style="color:#DA291C">Activar simulación</b> en cualquier par.<br>
+          2. El sistema agrega esa conexión <i>como si existiera</i>.<br>
+          3. Ve a <b>Sugerir troncal</b> y compara cualquier ruta.<br>
+          4. Verás cómo cambian los tiempos con la nueva conexión.<br>
+          5. Haz clic en <b style="color:#FFD100">Restaurar</b> para volver a la red real.
+        </div>
+      `;
+      elResultadoContenido.appendChild(guia);
     }
 
     mostrarEstado(`${resultados.length} pares críticos encontrados.`);
