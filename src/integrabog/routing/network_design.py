@@ -9,7 +9,10 @@ from pyproj import Transformer
 
 VELOCIDAD_BRT_KMH = 25.2
 VELOCIDAD_CAMINATA_KMH = 4.5
-ESPACIADO_ESTACIONES_M = 500.0
+# Las estaciones intermedias se sugieren cada ~600 m para que
+# el usuario pueda visualizar puntos de parada aproximados sin
+# saturar el mapa con los ~50.000 nodos de la malla vial.
+ESPACIADO_ESTACIONES_M = 600.0
 
 PENALIZACION_VIAL = {
     "motorway": 1.0,

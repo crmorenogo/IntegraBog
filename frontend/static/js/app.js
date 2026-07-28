@@ -100,9 +100,9 @@ function dibujarSugerencia(r) {
 
   for (const [lon, lat] of r.estaciones_intermedias_lonlat) {
     L.circleMarker([lat, lon], {
-      radius: 5,
-      color: '#22c55e',
-      fillColor: '#0f172a',
+      radius: 6,
+      color: '#eab308',
+      fillColor: '#fef08a',
       fillOpacity: 1,
       weight: 2,
     }).addTo(capaResultados);
