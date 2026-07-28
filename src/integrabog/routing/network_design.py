@@ -86,7 +86,7 @@ def _mejor_arista(datos_multi: dict) -> dict | None:
     return mejor
 
 
-def _peso_tiempo(u, v, datos_multi):
+def _peso_tiempo(_u, _v, datos_multi):
     arista = _mejor_arista(datos_multi)
     if arista is None:
         return None

@@ -58,7 +58,9 @@ def main():
         distancia_real_m += largo
         if arista.get("layer") == "micro":
             tipo = arista.get("highway", "sin_tag")
-            tipo = tipo[0] if isinstance(tipo, list) else tipo # highway fusionado por OSMnx puede llegar como lista
+            tipo = (
+                tipo[0] if isinstance(tipo, list) else tipo
+            )  # highway fusionado por OSMnx puede llegar como lista
         else:
             tipo = arista.get("layer")
         por_tipo[tipo] = por_tipo.get(tipo, 0.0) + largo
@@ -74,7 +76,9 @@ def main():
     for nodo, nombre in [(origen, "Escuela Militar"), (destino, "San Martín")]:
         d = G_multicapa.nodes[nodo]
         lon, lat = _TRANSFORMADOR.transform(d["x"], d["y"])
-        print(f"{nombre}: {lat:.5f}, {lon:.5f}  (pégarlo en Google Maps)") # a mano en un mapa, no hay forma de confirmar la barrera física desde acá
+        print(
+            f"{nombre}: {lat:.5f}, {lon:.5f}  (pégarlo en Google Maps)"
+        )  # a mano en un mapa, no hay forma de confirmar la barrera física desde acá
 
 
 if __name__ == "__main__":

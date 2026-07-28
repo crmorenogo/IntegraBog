@@ -50,15 +50,15 @@ def _obtener_grafo_base(lugar: str | list[str], forzar_descarga: bool = False) -
     print(f"Descargando red vial de '{lugar}' desde OpenStreetMap...")
     ox.settings.use_cache = True
     ox.settings.log_console = True
-    """ "drive" y no un filtro custom a trunk/primary/secondary: restringir solo a vías
-     principales arriesga fragmentar la red en varios pedazos (le falta lo que conecta
-     una avenida con otra); "drive" trae la jerarquía completa manejable sin arrastrar
-     andenes, ciclorrutas ni vías de servicio que "all" sí incluiría"""
+    # "drive" y no un filtro custom a trunk/primary/secondary: restringir solo a vías
+    # principales arriesga fragmentar la red en varios pedazos (le falta lo que conecta
+    # una avenida con otra); "drive" trae la jerarquía completa manejable sin arrastrar
+    # andenes, ciclorrutas ni vías de servicio que "all" sí incluiría
     G_crudo = ox.graph_from_place(lugar, network_type="drive", simplify=True)  # type: ignore[arg-type]
 
     print(f"Proyectando al CRS {CRS_METRICO}...")
-    """ tiene que pasar por acá ANTES de consolidar -- consolidate_intersections mide su
-     tolerancia en las unidades del CRS, y en CRS84 (grados) esa tolerancia no significa nada"""
+    # tiene que pasar por acá ANTES de consolidar -- consolidate_intersections mide su
+    # tolerancia en las unidades del CRS, y en CRS84 (grados) esa tolerancia no significa nada
     G_proyectado = ox.project_graph(G_crudo, to_crs=CRS_METRICO)
 
     RUTA_GRAFO_BASE.parent.mkdir(parents=True, exist_ok=True)
@@ -130,9 +130,9 @@ def obtener_malla_vial(
         f"({(1 - nodos_despues / nodos_antes) * 100:.1f}% fusionado)"
     )
 
-    """ medir ANTES de quedarse solo con la componente más grande -- si se descartara a
-     ciegas y resultara que el segundo componente también es grande, se estaría
-     perdiendo una porción real de la ciudad sin enterarse"""
+    # medir ANTES de quedarse solo con la componente más grande -- si se descartara a
+    # ciegas y resultara que el segundo componente también es grande, se estaría
+    # perdiendo una porción real de la ciudad sin enterarse
     componentes = sorted(nx.strongly_connected_components(G_consolidado), key=len, reverse=True)
     print(f"Componentes fuertemente conexas: {len(componentes)}")
     print(f"Tamaños (top 10): {[len(c) for c in componentes[:10]]}")

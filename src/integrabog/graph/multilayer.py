@@ -67,9 +67,9 @@ def construir_grafo_multicapa(G_macro: nx.DiGraph, G_micro: nx.MultiDiGraph) -> 
 
     G_multicapa = nx.compose(G_macro_capa, G_micro_capa)
 
-    """snapping vectorizado: todas las estaciones contra el grafo vial en una sola llamada,
-     no un nearest_nodes por estación -- con 150 estaciones y ~50.000 nodos viales, hacerlo
-     de a uno sería 150 búsquedas independientes en vez de una sola búsqueda por lotes"""
+    # snapping vectorizado: todas las estaciones contra el grafo vial en una sola llamada,
+    # no un nearest_nodes por estación -- con 150 estaciones y ~50.000 nodos viales, hacerlo
+    # de a uno sería 150 búsquedas independientes en vez de una sola búsqueda por lotes
     estaciones = [(n, d["x"], d["y"]) for n, d in G_macro_capa.nodes(data=True)]
     ids_estacion, xs, ys = zip(*estaciones, strict=False)
     nodos_viales, distancias = ox.distance.nearest_nodes(
@@ -78,8 +78,8 @@ def construir_grafo_multicapa(G_macro: nx.DiGraph, G_micro: nx.MultiDiGraph) -> 
 
     for id_estacion, id_vial, dist in zip(ids_estacion, nodos_viales, distancias, strict=False):
         peso = round(float(dist), 2)
-        """ambos sentidos: la transferencia es caminar, y se puede entrar o salir de la
-        # estación indistintamente por esa intersección"""
+        # ambos sentidos: la transferencia es caminar, y se puede entrar o salir de la
+        # estación indistintamente por esa intersección
         G_multicapa.add_edge(id_estacion, id_vial, weight=peso, layer="transferencia")
         G_multicapa.add_edge(id_vial, id_estacion, weight=peso, layer="transferencia")
 
