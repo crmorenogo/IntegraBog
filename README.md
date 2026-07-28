@@ -45,7 +45,7 @@ pip install .
 ### API REST
 
 ```bash
-uv run uvicorn integrabog.api.main:app --reload
+uvicorn integrabog.api.main:app --reload
 ```
 
 - API: http://localhost:8000/
