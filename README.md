@@ -46,6 +46,7 @@ pip install .
 
 ```bash
 uv run uvicorn integrabog.api.main:app --reload --reload-exclude '.venv/**'
+uvicorn integrabog.api.main:app --reload
 ```
 
 > Si usas un entorno virtual (`.venv/`) dentro del proyecto, el flag
