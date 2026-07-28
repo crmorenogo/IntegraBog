@@ -50,6 +50,15 @@ class SugerenciaOut(BaseModel):
         None, description="Solo presente cuando el resultado viene de /pares-criticos"
     )
 
+    recomendacion: str = Field(
+        "ruta_nueva",
+        description=(
+            "'ruta_nueva': la ruta propuesta es mejor. "
+            "'ruta_actual': la ruta actual de TransMilenio ya es mejor. "
+            "'sin_conexion_actual': no hay troncal directa hoy."
+        ),
+    )
+
 
 class ErrorOut(BaseModel):
     detalle: str

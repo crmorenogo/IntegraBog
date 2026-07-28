@@ -38,18 +38,28 @@ def _a_lonlat(x: float, y: float) -> tuple[float, float]:
 def _resultado_a_schema(r: dict, G: nx.MultiDiGraph) -> SugerenciaOut:
     """Convierte el dict que devuelve sugerir_nueva_troncal en el schema
     de salida, agregando los nombres legibles de las estaciones."""
+    ts = r["tiempo_actual_min"]
+    tn = r["tiempo_nueva_ruta_min"]
+    if ts is None:
+        recomendacion = "sin_conexion_actual"
+    elif ts <= tn:
+        recomendacion = "ruta_actual"
+    else:
+        recomendacion = "ruta_nueva"
+
     return SugerenciaOut(
         estacion_origen=r["estacion_origen"],
         estacion_destino=r["estacion_destino"],
         nombre_origen=G.nodes[r["estacion_origen"]].get("nombre", r["estacion_origen"]),
         nombre_destino=G.nodes[r["estacion_destino"]].get("nombre", r["estacion_destino"]),
-        tiempo_actual_min=r["tiempo_actual_min"],
-        geometria_actual_lonlat=r["geometria_actual_lonlat"],
-        tiempo_nueva_ruta_min=r["tiempo_nueva_ruta_min"],
-        ahorro_min=r["ahorro_min"],
+        tiempo_actual_min=ts,
+        geometria_actual_lonlat=r.get("geometria_actual_lonlat"),
+        tiempo_nueva_ruta_min=tn,
+        ahorro_min=r.get("ahorro_min"),
         geometria_lonlat=r["geometria_lonlat"],
         estaciones_intermedias_lonlat=r["estaciones_intermedias_lonlat"],
         distancia_geometrica_m=r.get("distancia_geometrica_m"),
+        recomendacion=recomendacion,
     )
 
 
