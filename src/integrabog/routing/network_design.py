@@ -26,6 +26,7 @@ _TRANSFORMADOR = Transformer.from_crs("EPSG:3116", "EPSG:4326", always_xy=True)
 
 
 class EstacionNoEncontradaError(Exception):
+    pass
 
 def _resolver_estacion(g_multicapa: nx.MultiDiGraph, identificador: str) -> str:
     identificador = str(identificador).strip()
