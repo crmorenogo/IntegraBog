@@ -1,35 +1,14 @@
-# --- Python ---
-__pycache__/
-*.py[cod]
-*.pyo
-*.egg-info/
-*.egg
-dist/
-build/
-
-# --- Virtual environments ---
 .venv/
-.venv*/
-venv/
-env/
+__pycache__/
+*.pyc
+*.egg-info/
 
-# --- IDE ---
 .idea/
-*.iml
-.vscode/
-*.swp
-*.swo
 
-# --- OS ---
-.DS_Store
-Thumbs.db
-
-# --- Project-specific ---
 cache/
 data/processed/*.graphml
+data/processed/*.parquet
+data/processed/*.json
+data/raw/overture/
+
 .env
-.ruff_cache/
-.mypy_cache/
-.pytest_cache/
-htmlcov/
-.coverage

@@ -5,15 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IntegraBog · Sugerencia de nuevas troncales</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<link rel="stylesheet" href="static/css/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="panel">
-    <div class="cabecera">
-      <h1>IntegraBog</h1>
-      <span class="badge">TransMilenio</span>
-    </div>
-    <p class="subtitulo">Diagnóstico de la red troncal y sugerencia de nuevas conexiones BRT</p>
+    <h1>IntegraBog</h1>
+    <p class="subtitulo">Diagnóstico de la red de TransMilenio y sugerencia de nuevas troncales</p>
 
     <div class="bloque">
       <h2>Sugerir troncal entre dos estaciones</h2>
@@ -26,15 +23,23 @@
 
     <div class="bloque">
       <h2>Pares críticos automáticos</h2>
-      <p class="ayuda">Encuentra las estaciones más cercanas entre corredores distintos y evalúa el ahorro de una hipotética conexión.</p>
-      <label for="top-n">Cuántos pares evaluar</label>
+      <p class="ayuda">Encuentra las estaciones que están cerca en línea recta pero lejos por la red troncal.</p>
+      <label for="top-n">Cuántos pares (top N)</label>
       <input type="number" id="top-n" value="5" min="1" max="20">
       <button id="btn-pares">Buscar pares críticos</button>
+    </div>
+
+    <div class="bloque">
+      <h2>Capas del mapa</h2>
       <div class="leyenda">
-        <div class="fila"><span class="linea" style="background:#DA291C"></span> Red troncal actual</div>
-        <div class="fila"><span class="linea" style="background:#FFD100"></span> Ruta propuesta</div>
-        <div class="fila"><span class="punto" style="background:#FFD100"></span> Parada sugerida</div>
+        <span class="muestra muestra-trazado"></span> Trazado oficial de las troncales
       </div>
+      <label class="interruptor">
+        <input type="checkbox" id="ver-conexiones">
+        <span class="muestra muestra-modelo"></span>
+        Conexiones del modelo <span id="n-conexiones"></span>
+      </label>
+      <p class="ayuda">Costuras y cruces entre troncales que el modelo infiere del trazado para poder enrutar. No son troncales: están ocultas por defecto.</p>
     </div>
 
     <div id="resultado" class="bloque oculto">
@@ -43,15 +48,11 @@
     </div>
 
     <div id="estado" class="estado"></div>
-
-    <div class="footer">
-      IntegraBog · Universidad Nacional de Colombia
-    </div>
   </div>
 
   <div id="mapa"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="static/js/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
