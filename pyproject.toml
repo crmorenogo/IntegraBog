@@ -5,9 +5,22 @@ requires-python = ">=3.13"
 dependencies = [
     "geopandas>=1.1.4",
     "networkx>=3.6.1",
-    "osmnx>=2.1.0",
     "pyproj>=3.6",
     "scipy>=1.13",
+    "city2graph>=1.0,<2",
+    "overturemaps>=1.0",
+    "pyarrow>=15",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
+    "pytest>=9.1.1",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

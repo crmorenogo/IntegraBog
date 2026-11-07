@@ -26,6 +26,19 @@ def diagnosticar_grafo(G: nx.Graph, etiqueta_nodo: str = "nombre") -> None:
     print(f"Nodos: {G.number_of_nodes()} | Aristas: {G.number_of_edges()}")
     print(f"Componentes conexas: {nx.number_connected_components(G_no_dirigido)}")
 
+    # --- EXTENSIÓN PREVISTA (no implementada): diámetro del grafo ---
+    # Va aquí, justo después de contar componentes, porque nx.diameter solo está
+    # definido sobre un grafo conexo (lanza NetworkXError si no): se calcula sobre la
+    # componente conexa más grande de G_no_dirigido, no sobre G entero. El macro tiene
+    # varias componentes (troncales que no comparten estación), así que esto aplica a
+    # los dos grafos por igual:
+    #     principal = G_no_dirigido.subgraph(max(nx.connected_components(G_no_dirigido), key=len))
+    #     print(f"Diámetro (saltos, componente principal): {nx.diameter(principal)}")
+    # Ojo con el costo: nx.diameter corre un BFS desde cada nodo, O(n·m). En el macro
+    # (150 nodos) es instantáneo; en el multicapa (~55.000 nodos, ~143.000 aristas) son
+    # ~55.000 BFS -- ahí conviene nx.approximation.diameter (cota inferior por barridos
+    # dobles, segundos en vez de horas) o restringirlo a la capa macro.
+
     aislados = [n for n, grado in G.degree() if grado == 0]
     if aislados:
         print(f"Nodos con grado 0 ({len(aislados)}):")

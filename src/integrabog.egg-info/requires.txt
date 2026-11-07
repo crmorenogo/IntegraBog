@@ -1,5 +1,13 @@
 geopandas>=1.1.4
 networkx>=3.6.1
-osmnx>=2.1.0
+pyproj>=3.6
+scipy>=1.13
+city2graph<2,>=1.0
+overturemaps>=1.0
+pyarrow>=15
 fastapi>=0.115
 uvicorn[standard]>=0.32
+pytest>=9.1.1
+
+[dev]
+pytest>=8

@@ -12,7 +12,10 @@ class EstacionOut(BaseModel):
 
     id: str = Field(..., description="ID interno del nodo, ej. 'macro_4107'")
     codigo: int = Field(..., description="Codigo de nodo original (cod_nodo)")
-    nombre: str
+    nombre: str = Field(..., description="Nombre oficial (Datos Abiertos); puede repetirse")
+    etiqueta: str = Field(..., description="Texto para mostrar: el nombre, con la troncal entre "
+                                           "paréntesis si el nombre está repetido. Único por estación")
+    troncal: str | None = Field(None, description="Nombre de la troncal (nom_tronc del trazado)")
     num_est: str | None = None
     tipo_estacion: int
     lon: float
@@ -33,7 +36,15 @@ class SugerenciaOut(BaseModel):
     nombre_destino: str
 
     tiempo_actual_min: float | None = Field(
-        None, description="Tiempo por la red troncal existente. None si no hay conexion directa hoy."
+        None, description="Tiempo por la red troncal existente, con transbordo_min por cada transbordo. "
+                          "None si no hay conexion directa hoy."
+    )
+    transbordos_actuales: int | None = Field(
+        None, description="Transbordos (cruces entre troncales) de la ruta actual. None si no hay ruta actual."
+    )
+    transbordo_min: float | None = Field(
+        None, description="Minutos que se cobran por transbordo (config.TRANSBORDO_MIN); los mismos de las "
+                          "metricas de la red."
     )
     geometria_actual_lonlat: list[list[float]] | None = None
 
@@ -46,6 +57,10 @@ class SugerenciaOut(BaseModel):
 
     distancia_geometrica_m: float | None = Field(
         None, description="Solo presente cuando el resultado viene de /pares-criticos"
+    )
+    factor_rodeo: float | None = Field(
+        None, description="Distancia por la red troncal / distancia en línea recta. Solo en "
+                          "/pares-criticos; None si el par no tiene conexión troncal"
     )
 
 
@@ -62,10 +77,33 @@ class DiagnosticoOut(BaseModel):
 
 
 class AristaRedActualOut(BaseModel):
-    """Una arista de la red troncal existente, para dibujar el mapa base."""
+    """Una conexión del grafo macro entre dos estaciones.
+
+    El mapa base ya no se dibuja con esto sino con /api/trazado (el trazado
+    oficial); esta ruta sirve para mostrar, aparte, las conexiones que el
+    modelo infiere (costura y cruces) y para inspeccionar el grafo."""
 
     origen_lon: float
     origen_lat: float
     destino_lon: float
     destino_lat: float
     nom_tronc: str | None = None
+    origen: str | None = Field(None, description="Etiqueta de la estación de origen")
+    destino: str | None = Field(None, description="Etiqueta de la estación de destino")
+    tipo: str = Field("tramo", description="'tramo' (estaciones consecutivas del trazado oficial), "
+                                           "'costura' o 'cruce' (inferidas por el modelo)")
+    geometria_lonlat: list[list[float]] = Field(
+        ..., description="Recorrido por el trazado, de origen a destino, en [lon, lat]"
+    )
+
+
+class TrazadoOut(BaseModel):
+    """Una troncal del trazado oficial (Datos Abiertos), tal como viene en el
+    archivo, para dibujar el mapa base."""
+
+    id_trazado: str
+    nom_traz: str | None = None
+    nom_tronc: str | None = None
+    lineas_lonlat: list[list[list[float]]] = Field(
+        ..., description="Una o más líneas (el trazado puede venir partido), cada una en [lon, lat]"
+    )

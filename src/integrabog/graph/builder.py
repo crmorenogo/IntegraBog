@@ -13,6 +13,8 @@ import networkx as nx
 import pandas as pd
 import geopandas as gpd
 
+from integrabog.graph.geometria_troncal import a_linea, invertir, tramo_entre
+
 
 def construir_nodos(G: nx.DiGraph, estaciones: gpd.GeoDataFrame) -> None:
     """Agrega una estación por nodo, con sus atributos originales.
@@ -33,7 +35,7 @@ def construir_nodos(G: nx.DiGraph, estaciones: gpd.GeoDataFrame) -> None:
             y=est.geometry.y,
         )
 
-def construir_aristas(G: nx.DiGraph, acoples: pd.DataFrame) -> None:
+def construir_aristas(G: nx.DiGraph, acoples: pd.DataFrame, tramos: gpd.GeoDataFrame | None = None) -> None:
     """Ordena las estaciones acopladas a cada tramo por su posición de
     arco 's' y conecta cada par de estaciones consecutivas.
 
@@ -46,8 +48,15 @@ def construir_aristas(G: nx.DiGraph, acoples: pd.DataFrame) -> None:
             se asume que ya tiene los nodos de construir_nodos.
         acoples: DataFrame con, por estación, a qué tramo_id quedó
             acoplada y su posición de arco 's' sobre ese tramo.
+        tramos: piezas del trazado (snapping.explotar_tramos). Si se pasa,
+            cada arista lleva en 'geometry' el pedazo de trazado entre las
+            dos estaciones, para que el mapa dibuje la curva real y no una
+            recta (ver geometria_troncal.py). Es opcional para no romper a
+            quien solo necesite la topología.
     """
-    for _, grupo in acoples.groupby("tramo_id"):
+    pieza_de = dict(zip(tramos["tramo_id"], tramos.geometry)) if tramos is not None else {}
+
+    for tramo_id, grupo in acoples.groupby("tramo_id"):
         """el orden dentro de cada tramo es lo único que importa acá --
          agrupar por tramo_id evita conectar estaciones de tramos
          distintos que por casualidad quedaron con 's' parecido"""
@@ -55,9 +64,15 @@ def construir_aristas(G: nx.DiGraph, acoples: pd.DataFrame) -> None:
         for i in range(len(grupo) - 1):
             a, b = grupo.loc[i], grupo.loc[i + 1]
             peso = round(b["s"] - a["s"], 2) # diferencia de arco, no distancia en línea recta -- sigue la curva real del tramo, no atraviesa manzanas
+            forma = {}
+            if tramo_id in pieza_de:
+                na, nb = G.nodes[a["cod_nodo"]], G.nodes[b["cod_nodo"]]
+                linea = a_linea(tramo_entre(pieza_de[tramo_id], a["s"], b["s"]),
+                                ((na["x"], na["y"]), (nb["x"], nb["y"])))
+                forma = {"ida": {"geometry": linea}, "vuelta": {"geometry": invertir(linea)}}
             G.add_edge(a["cod_nodo"], b["cod_nodo"], weight=peso,
-                       id_trazado=a["id_trazado"], nom_tronc=a["nom_tronc"])
+                       id_trazado=a["id_trazado"], nom_tronc=a["nom_tronc"], **forma.get("ida", {}))
             G.add_edge(b["cod_nodo"], a["cod_nodo"], weight=peso,
-                       id_trazado=a["id_trazado"], nom_tronc=a["nom_tronc"])
+                       id_trazado=a["id_trazado"], nom_tronc=a["nom_tronc"], **forma.get("vuelta", {}))
             """arista en ambos sentidos: no hay dato de sentido de circulación real todavía,
              así que por ahora se asume que se puede recorrer el tramo en cualquier dirección"""

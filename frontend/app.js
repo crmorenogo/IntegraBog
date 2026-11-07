@@ -9,9 +9,19 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
 }).addTo(mapa);
 
-const capaEstaciones = L.layerGroup().addTo(mapa);
-const capaRedActual = L.layerGroup().addTo(mapa);
-const capaResultados = L.layerGroup().addTo(mapa);
+// Orden de las capas = orden de dibujo: el trazado oficial queda al fondo,
+// las estaciones y los resultados encima.
+const capaTrazado = L.layerGroup().addTo(mapa);
+// Costuras y cruces: conexiones que infiere el modelo, no troncales reales.
+// Ocultas por defecto; se muestran con el interruptor del panel.
+const capaConexionesModelo = L.layerGroup();
+// featureGroup (y no layerGroup) para poder devolverlas al frente con
+// bringToFront() cuando se encienden las conexiones del modelo.
+const capaEstaciones = L.featureGroup().addTo(mapa);
+const capaResultados = L.featureGroup().addTo(mapa);
+
+const COLOR_TRAZADO = '#475569';
+const COLOR_CONEXION_MODELO = '#f97316';
 
 const elEstado = document.getElementById('estado');
 const elOrigen = document.getElementById('origen');
@@ -40,9 +50,13 @@ async function cargarEstaciones() {
   const estaciones = await obtenerJSON('/api/estaciones');
 
   for (const est of estaciones) {
+    // value = ID del nodo, no el nombre: hay nombres repetidos en los datos
+    // oficiales ("Temporal AV. Jiménez - Inter Eléctricas" son dos estaciones)
+    // y la API no puede saber cuál de las dos se eligió. La etiqueta trae la
+    // troncal entre paréntesis justo en esos casos.
     const opcionA = document.createElement('option');
-    opcionA.value = est.nombre;
-    opcionA.textContent = est.nombre;
+    opcionA.value = est.id;
+    opcionA.textContent = est.etiqueta;
     elOrigen.appendChild(opcionA);
 
     const opcionB = opcionA.cloneNode(true);
@@ -55,7 +69,7 @@ async function cargarEstaciones() {
       fillOpacity: 0.9,
       weight: 1,
     })
-      .bindTooltip(est.nombre)
+      .bindTooltip(est.troncal ? `${est.etiqueta} · ${est.troncal}` : est.etiqueta)
       .addTo(capaEstaciones);
   }
 
@@ -66,20 +80,58 @@ async function cargarEstaciones() {
   mostrarEstado(`${estaciones.length} estaciones cargadas.`);
 }
 
-async function cargarRedActual() {
-  const aristas = await obtenerJSON('/api/red-actual');
-  for (const a of aristas) {
-    L.polyline(
-      [
-        [a.origen_lat, a.origen_lon],
-        [a.destino_lat, a.destino_lon],
-      ],
-      { color: '#475569', weight: 2, opacity: 0.7 }
-    ).addTo(capaRedActual);
+// Mapa base: el trazado oficial de Datos Abiertos, tal como viene. Antes se
+// dibujaban las aristas del grafo como rectas entre estaciones, que cortaban
+// las curvas y mostraban costuras y cruces como si fueran troncales.
+async function cargarTrazado() {
+  const troncales = await obtenerJSON('/api/trazado');
+  for (const t of troncales) {
+    for (const linea of t.lineas_lonlat) {
+      L.polyline(
+        linea.map(([lon, lat]) => [lat, lon]),
+        { color: COLOR_TRAZADO, weight: 3, opacity: 0.75 }
+      )
+        .bindTooltip(t.nom_tronc || t.nom_traz || t.id_trazado, { sticky: true })
+        .addTo(capaTrazado);
+    }
   }
 }
 
+// Costuras y cruces, cada uno con su recorrido por el trazado. Se dibujan
+// punteados y en otro color para que nunca se confundan con una troncal.
+async function cargarConexionesModelo() {
+  const aristas = await obtenerJSON('/api/red-actual?tipo=costura&tipo=cruce');
+  for (const a of aristas) {
+    const nombreTipo = a.tipo === 'cruce' ? 'Cruce entre troncales' : 'Costura del trazado';
+    L.polyline(
+      a.geometria_lonlat.map(([lon, lat]) => [lat, lon]),
+      { color: COLOR_CONEXION_MODELO, weight: 3, opacity: 0.9, dashArray: '4 6' }
+    )
+      .bindTooltip(`${nombreTipo} (inferida): ${a.origen} ↔ ${a.destino}`, { sticky: true })
+      .addTo(capaConexionesModelo);
+  }
+  return aristas.length;
+}
+
+document.getElementById('ver-conexiones').addEventListener('change', (evento) => {
+  if (evento.target.checked) {
+    capaConexionesModelo.addTo(mapa);
+    capaResultados.bringToFront();
+    capaEstaciones.bringToFront();
+  } else {
+    mapa.removeLayer(capaConexionesModelo);
+  }
+});
+
 // --- Dibujar un resultado de sugerencia ---
+
+// " (incluye 2 transbordos de 5 min)": el tiempo actual ya los trae sumados, con el mismo
+// costo por transbordo que usan las métricas de la red (config.TRANSBORDO_MIN).
+function textoTransbordos(r) {
+  const n = r.transbordos_actuales;
+  if (!n) return '';
+  return ` (incluye ${n} transbordo${n === 1 ? '' : 's'} de ${r.transbordo_min} min)`;
+}
 
 function dibujarSugerencia(r) {
   if (r.geometria_actual_lonlat) {
@@ -87,7 +139,7 @@ function dibujarSugerencia(r) {
       r.geometria_actual_lonlat.map(([lon, lat]) => [lat, lon]),
       { color: '#facc15', weight: 3, dashArray: '6 6' }
     )
-      .bindTooltip(`Ruta actual: ${r.tiempo_actual_min} min`)
+      .bindTooltip(`Ruta actual: ${r.tiempo_actual_min} min${textoTransbordos(r)}`)
       .addTo(capaResultados);
   }
 
@@ -124,10 +176,11 @@ function tarjetaResultado(r) {
 
   div.innerHTML = `
     <div class="titulo">${r.nombre_origen} &harr; ${r.nombre_destino}</div>
-    <div>Tiempo actual: ${r.tiempo_actual_min ?? '—'} min</div>
+    <div>Tiempo actual: ${r.tiempo_actual_min ?? '—'} min${textoTransbordos(r)}</div>
     <div>Tiempo ruta nueva: ${r.tiempo_nueva_ruta_min} min</div>
     <div>${lineaAhorro}</div>
     ${r.distancia_geometrica_m ? `<div>Distancia en línea recta: ${r.distancia_geometrica_m} m</div>` : ''}
+    ${r.factor_rodeo ? `<div>Por la red troncal: ${r.factor_rodeo}× la línea recta</div>` : ''}
   `;
   return div;
 }
@@ -196,7 +249,9 @@ document.getElementById('btn-pares').addEventListener('click', async () => {
 (async function iniciar() {
   try {
     await cargarEstaciones();
-    await cargarRedActual();
+    await cargarTrazado();
+    const n = await cargarConexionesModelo();
+    document.getElementById('n-conexiones').textContent = `(${n})`;
   } catch (err) {
     mostrarEstado(`Error cargando datos iniciales: ${err.message}`, true);
   }

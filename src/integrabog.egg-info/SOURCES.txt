@@ -13,6 +13,7 @@ src/integrabog/api/schemas.py
 src/integrabog/api/state.py
 src/integrabog/data/loader.py
 src/integrabog/graph/builder.py
+src/integrabog/graph/conversion.py
 src/integrabog/graph/costura.py
 src/integrabog/graph/diagnostico.py
 src/integrabog/graph/macro.py
@@ -23,4 +24,9 @@ src/integrabog/routing/network_design.py
 src/integrabog/scripts/build_micro.py
 src/integrabog/scripts/build_multilayer.py
 src/integrabog/scripts/diagnostico_caso_limite.py
+src/integrabog/scripts/script.py
+src/integrabog/scripts/script2.py
 src/integrabog/scripts/validar_pares_criticos.py
+src/integrabog/scripts/verificar_refactor_city2graph.py
+tests/test_acceso_estaciones.py
+tests/test_reglas_overture.py

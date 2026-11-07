@@ -7,7 +7,7 @@ Como correrla (desde la raiz del repo, con el venv activo):
 
 La primera vez que arranca construye el grafo multicapa completo (tarda
 unos segundos si la malla vial ya esta en cache; varios minutos si
-OSMnx tiene que descargarla). Mientras el proceso siga corriendo, todas
+tiene que descargarla de Overture Maps). Mientras el proceso siga corriendo, todas
 las peticiones reusan ese mismo grafo en memoria.
 
 Documentacion interactiva automatica una vez arriba: http://localhost:8000/docs

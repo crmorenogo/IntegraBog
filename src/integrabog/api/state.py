@@ -3,8 +3,8 @@ Estado de la API: construye el grafo multicapa UNA sola vez cuando el
 servidor arranca, y lo mantiene en memoria para todas las peticiones.
 
 Por que no se reconstruye en cada request:
-    Construir el grafo micro desde OSMnx o incluso solo cargarlo desde
-    el .graphml de cache toma varios segundos (son ~94 MB). Si se
+    Construir el grafo micro desde Overture Maps o incluso solo cargarlo
+    desde la cache GeoParquet toma varios segundos. Si se
     hiciera en cada llamada, cada endpoint tardaria eso mismo en
     responder. La solucion estandar en FastAPI es un "lifespan": un
     bloque de codigo que corre una vez al iniciar el proceso y deja
@@ -16,6 +16,7 @@ import networkx as nx
 from pyproj import Transformer
 
 from integrabog.config import CRS_METRICO
+from integrabog.data.loader import cargar_trazado
 from integrabog.graph.macro import construir_grafo_macro
 from integrabog.graph.micro import obtener_malla_vial
 from integrabog.graph.multilayer import construir_grafo_multicapa
@@ -30,9 +31,33 @@ TRANSFORMADOR_A_LONLAT = Transformer.from_crs(CRS_METRICO, "EPSG:4326", always_x
 class EstadoGrafo:
     """Contenedor simple para el grafo multicapa ya listo para consultar."""
 
-    def __init__(self, grafo: nx.MultiDiGraph, segundos_construccion: float):
+    def __init__(self, grafo: nx.MultiDiGraph, segundos_construccion: float,
+                 trazado: list[dict] | None = None):
         self.grafo = grafo
         self.segundos_construccion = segundos_construccion
+        self.trazado = trazado or []  # ver trazado_para_mapa()
+
+
+def trazado_para_mapa() -> list[dict]:
+    """El trazado oficial de las troncales en lon/lat, listo para el mapa base.
+
+    Se lee una sola vez al arrancar (es un archivo local de ~20 troncales) y
+    se sirve tal cual en /api/trazado: el fondo del mapa tiene que ser el
+    dato oficial, no las aristas del grafo, que incluyen conexiones que el
+    modelo infiere (costura y cruces) y que no son troncales.
+    """
+    trazado = cargar_trazado().to_crs("EPSG:4326")
+    troncales = []
+    for _, fila in trazado.iterrows():
+        lineas = [[[round(c[0], 6), round(c[1], 6)] for c in linea.coords]
+                  for linea in getattr(fila.geometry, "geoms", [fila.geometry])]
+        troncales.append({
+            "id_trazado": fila["id_trazado"],
+            "nom_traz": fila.get("nom_traz"),
+            "nom_tronc": fila.get("nom_tronc"),
+            "lineas_lonlat": lineas,
+        })
+    return troncales
 
 
 def construir_estado() -> EstadoGrafo:
@@ -40,9 +65,10 @@ def construir_estado() -> EstadoGrafo:
     calcula el costo BRT, dejando todo listo para las rutas de la API.
 
     El grafo macro se reconstruye siempre (es barato: 150 estaciones
-    locales). El grafo micro se carga desde el .graphml en cache
-    (data/processed/malla_vial_micro_tol2.graphml); si ese archivo no
-    existe, OSMnx lo descarga la primera vez y esto puede tardar varios
+    locales). El grafo micro se carga desde la cache GeoParquet
+    (data/processed/malla_vial_overture_*.parquet); si no existe, se
+    construye desde la descarga cruda de Overture (data/raw/overture/), y
+    si tampoco existe esa, City2Graph la descarga y puede tardar varios
     minutos -- correr antes 'python -m integrabog.scripts.build_micro'
     para que la API arranque rapido.
     """
@@ -64,4 +90,4 @@ def construir_estado() -> EstadoGrafo:
     print(f"[API] Grafo multicapa listo en {duracion:.1f} s "
           f"({G_multicapa.number_of_nodes()} nodos, {G_multicapa.number_of_edges()} aristas).")
 
-    return EstadoGrafo(grafo=G_multicapa, segundos_construccion=duracion)
+    return EstadoGrafo(grafo=G_multicapa, segundos_construccion=duracion, trazado=trazado_para_mapa())
