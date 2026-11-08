@@ -44,6 +44,19 @@ ESPACIADO_ESTACIONES_M = 500.0
  hueco que una conexión corta pueda cerrar"""
 RADIO_PAR_CRITICO_M = 1000.0
 
+"""Arista de una troncal propuesta en el grafo macro (routing/escenarios.py). Como un cruce,
+ une dos troncales distintas, así que también implica un transbordo: si no lo cobrara, pasar
+ de una troncal a otra por la propuesta saldría gratis y por un cruce existente costaría
+ TRANSBORDO_MIN, y la comparación antes/después favorecería a la red propuesta solo por cómo
+ se cuentan los transbordos."""
+TIPO_ARISTA_PROPUESTA = "propuesta"
+TIPOS_CON_TRANSBORDO = frozenset({TIPO_ARISTA_CRUCE, TIPO_ARISTA_PROPUESTA})
+"""Transbordo propio de una arista, en minutos, que reemplaza a TRANSBORDO_MIN. Solo lo trae
+ una troncal propuesta, cuando el escenario fija el suyo (escenarios.agregar_troncales):
+ con 0, la propuesta se opera como ruta continua, un servicio que sigue de una troncal a la
+ otra sin que el pasajero cambie de bus. Los cruces de la red de hoy nunca lo traen."""
+ATRIBUTO_TRANSBORDO_PROPIO = "transbordo_propio_min"
+
 ATRIBUTO_CLASE_VIAL = "class"  # jerarquía vial de Overture (en OSM era 'highway')
 
 PENALIZACION_VIAL = {
@@ -138,13 +151,35 @@ def calcular_costo_brt(G_multicapa: nx.MultiDiGraph) -> None:
         datos["tiempo_brt_min"] = (largo_m / 1000) / VELOCIDAD_BRT_KMH * 60 * factor
 
 
+def transbordo_arista_min(d: dict, transbordo_min: float = TRANSBORDO_MIN) -> float:
+    """Minutos de transbordo que cobra una arista: transbordo_min si implica
+    un cambio de troncal (TIPOS_CON_TRANSBORDO) y 0 si no. Una troncal
+    propuesta puede traer el suyo (ATRIBUTO_TRANSBORDO_PROPIO), que manda
+    sobre transbordo_min: así el escenario cambia el de las propuestas sin
+    tocar el de los cruces de la red de hoy."""
+    if d.get("tipo") not in TIPOS_CON_TRANSBORDO:
+        return 0.0
+    return float(d.get(ATRIBUTO_TRANSBORDO_PROPIO, transbordo_min))
+
+
+def implica_transbordo(d: dict) -> bool:
+    """Si recorrer la arista cuenta como un transbordo: un cruce, o una
+    propuesta que no se opera como ruta continua (transbordo propio de 0)."""
+    return d.get("tipo") in TIPOS_CON_TRANSBORDO and d.get(ATRIBUTO_TRANSBORDO_PROPIO) != 0
+
+
 def tiempo_troncal_min(d: dict, transbordo_min: float = TRANSBORDO_MIN) -> float:
-    """Minutos de una arista de la red troncal existente: su largo por el
-    trazado a VELOCIDAD_BRT_KMH, más config.TRANSBORDO_MIN si es un cruce
-    entre troncales (un transbordo). Es la única definición: la usan la ruta
-    actual que muestra la app (sugerir_nueva_troncal) y las métricas de la
-    red (routing/metricas.py), para que la app y el informe midan igual."""
-    transbordo = transbordo_min if d.get("tipo") == TIPO_ARISTA_CRUCE else 0.0
+    """Minutos de una arista de la red troncal: su largo por el trazado a
+    VELOCIDAD_BRT_KMH, más el transbordo si implica un cambio de troncal
+    (transbordo_arista_min). Una troncal propuesta (routing/escenarios.py)
+    trae su propio tiempo en 'tiempo_min': el de su ruta por la malla vial,
+    que no va a la velocidad del trazado. Es la única definición: la usan la
+    ruta actual que muestra la app (sugerir_nueva_troncal) y las métricas de
+    la red (routing/metricas.py y routing/robustez.py), para que la app y el
+    informe midan igual."""
+    transbordo = transbordo_arista_min(d, transbordo_min)
+    if "tiempo_min" in d:
+        return d["tiempo_min"] + transbordo
     return (d["weight"] / 1000) / VELOCIDAD_BRT_KMH * 60 + transbordo
 
 
@@ -360,6 +395,7 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
         "transbordo_min": TRANSBORDO_MIN,
         "geometria_actual_lonlat": None,
         "tiempo_nueva_ruta_min": None,
+        "largo_nueva_ruta_m": None,
         "ahorro_min": None,
         "geometria_lonlat": None,
         "estaciones_intermedias_lonlat": None,
@@ -373,7 +409,7 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
         camino_actual = nx.shortest_path(G_macro, id_origen, id_destino, weight=_peso_tiempo)
         usadas = [_mejor_arista(G_macro.get_edge_data(u, v)) for u, v in zip(camino_actual[:-1], camino_actual[1:])]
         resultado["tiempo_actual_min"] = round(sum(_tiempo_arista(d) for d in usadas), 2)
-        resultado["transbordos_actuales"] = sum(1 for d in usadas if d.get("tipo") == TIPO_ARISTA_CRUCE)
+        resultado["transbordos_actuales"] = sum(1 for d in usadas if implica_transbordo(d))
         resultado["geometria_actual_lonlat"] = _geometria_ruta_lonlat(G_multicapa, camino_actual)
     except (nx.NetworkXNoPath, nx.NodeNotFound):
         pass  # sin conexión directa por troncal existente -- se documenta como limitación
@@ -383,6 +419,10 @@ def sugerir_nueva_troncal(G_multicapa: nx.MultiDiGraph, id_origen: str, id_desti
     camino, claves, tiempo_nuevo = ruta_nueva(G_multicapa, id_origen, id_destino)
 
     resultado["tiempo_nueva_ruta_min"] = round(tiempo_nuevo, 2)
+    """el largo de estación a estación, con los dos accesos a pie: es el que lleva la troncal
+     propuesta al grafo macro (routing/escenarios.py), junto con su tiempo"""
+    aristas_nuevas = [_arista_del_camino(G_multicapa, camino, claves, i) for i in range(len(camino) - 1)]
+    resultado["largo_nueva_ruta_m"] = round(sum(d.get("length", d.get("weight", 0.0)) for d in aristas_nuevas), 1)
     resultado["geometria_lonlat"] = _geometria_ruta_lonlat(G_multicapa, camino, claves)
 
     paradas = _estaciones_intermedias(G_multicapa, camino, claves=claves)

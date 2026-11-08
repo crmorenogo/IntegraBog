@@ -42,11 +42,14 @@ Proyecto final del curso Matemáticas Discretas, Universidad Nacional de Colombi
 
 - **Pares críticos.** El modelo identifica pares de estaciones a menos de 1 km en línea recta con el mayor factor de rodeo por la red troncal (distancia por la red dividida por la distancia en línea recta) y, para cada uno, compara la ruta actual con una troncal nueva por la malla vial: tiempo, transbordos y ahorro estimado.
 
-- **Módulo analítico.** Excentricidad de cada estación, diámetro, radio, centro y periferia de la red, por tiempo de viaje, distancia y número de tramos, con salidas en GeoJSON, CSV y Markdown listas para el informe. Ver [Módulo analítico](#módulo-analítico-matemáticas-discretas).
+- **Módulo analítico.** Tres análisis sobre el grafo de la red troncal ([detalles](#módulo-analítico-matemáticas-discretas)), con salidas en GeoJSON, CSV y Markdown listas para el informe:
+    - métricas de distancia: excentricidad de cada estación, diámetro, radio, centro, periferia y distancia media, por tiempo de viaje, distancia y número de tramos;
+    - robustez: puntos de corte, puentes, número ciclomático, conectividad, intermediación, eficiencia global y efecto de cerrar cada estación y cada enlace;
+    - comparación antes/después: las mismas métricas sobre la red con las troncales propuestas, con las mismas estaciones, y el aporte de cada propuesta por separado.
 
 - **Interfaz web.** Un mapa Leaflet servido por la misma API (FastAPI). Las troncales se dibujan con la geometría curva real del trazado oficial y las rutas propuestas con la forma de cada calle, no con segmentos rectos entre nodos. Un interruptor de capas muestra u oculta las conexiones lógicas que infiere el modelo (costuras y cruces), que se dibujan punteadas y en otro color para no confundirlas con troncales.
 
-- **Reproducibilidad.** La malla procesada se guarda en GeoParquet con una versión del proceso y se regenera sola cuando cambia un parámetro que la afecta; el release de Overture utilizado queda registrado en los metadatos de la caché. El proyecto cuenta con más de 150 pruebas automatizadas e integración continua con Ruff, mypy y pytest.
+- **Reproducibilidad.** La malla procesada se guarda en GeoParquet con una versión del proceso y se regenera sola cuando cambia un parámetro que la afecta; el release de Overture utilizado queda registrado en los metadatos de la caché. El proyecto cuenta con más de 200 pruebas automatizadas e integración continua con Ruff, mypy y pytest.
 
 ## Arquitectura del modelo
 
@@ -58,11 +61,13 @@ flowchart TB
     OV["Overture Maps<br/>segmentos y conectores"] --> MICRO["Grafo micro<br/>sentidos, factibilidad y giros"]
     MACRO --> MULTI["Grafo multicapa<br/>+ aristas de transferencia"]
     MICRO --> MULTI
-    MACRO --> MET["Métricas de la red<br/>e(v), D, r, centro y periferia"]
     MULTI --> DIS["Diseño de red<br/>ruta actual vs. ruta nueva"]
     DIS --> API["API REST · FastAPI"]
     API --> WEB["Mapa web · Leaflet"]
-    MET --> RES["resultados/metricas<br/>GeoJSON, CSV y Markdown"]
+    DIS --> PROP["Troncales propuestas<br/>propuestas.geojson"]
+    MACRO --> AN["Módulo analítico<br/>métricas, robustez y antes/después"]
+    PROP --> AN
+    AN --> RES["resultados/<br/>metricas, robustez y escenarios"]
 ```
 
 | Capa | Nodos | Aristas | Módulos |
@@ -127,10 +132,26 @@ IntegraBog/
 │   ├── app.js                         # Leaflet: trazado, estaciones, rutas y capas lógicas
 │   └── style.css
 ├── resultados/
-│   └── metricas/                      # Salidas de metricas_red
-│       ├── metricas_red.geojson       # Caminos del diámetro y excentricidad por estación
-│       ├── excentricidades.csv        # Una fila por estación, en los tres criterios
-│       └── metricas_red.md            # Tablas listas para el informe
+│   ├── metricas/                      # Salidas de metricas_red
+│   │   ├── metricas_red.geojson       # Caminos del diámetro y excentricidad por estación
+│   │   ├── excentricidades.csv        # Una fila por estación, en los tres criterios
+│   │   └── metricas_red.md            # Tablas listas para el informe
+│   ├── robustez/                      # Salidas de robustez_red
+│   │   ├── robustez_red.md            # Estructura, intermediación y cierres
+│   │   ├── estaciones.csv             # Grado, punto de corte, intermediación y cierre
+│   │   ├── enlaces.csv                # Puente y efecto del cierre de cada enlace
+│   │   └── robustez_red.geojson       # Puentes, puntos de corte y estaciones más usadas
+│   └── escenarios/                    # Antes y después con las troncales propuestas
+│       ├── propuestas.geojson         # Salida de proponer_troncales
+│       ├── antes_despues.md           # Tabla antes/después y aporte de cada propuesta
+│       ├── antes_despues.csv          # Cambios por estación
+│       ├── antes_despues.geojson      # Propuestas, puentes que desaparecen y mejoras
+│       └── final/                     # Escenario final: conexión física y ruta continua
+│           ├── propuestas.geojson     # Las propuestas elegidas
+│           ├── comparacion_transbordo.md   # Las dos variantes lado a lado
+│           ├── comparacion_transbordo.csv  # Tiempo medio e intermediación por estación
+│           ├── conexion_fisica/       # Informe completo, con 5 min de transbordo
+│           └── ruta_continua/         # Informe completo, sin transbordo
 ├── src/integrabog/
 │   ├── config.py                      # Rutas y parámetros del modelo, en un solo lugar
 │   ├── data/
@@ -151,7 +172,9 @@ IntegraBog/
 │   │   └── diagnostico.py             # Tamaño y conexidad de un grafo
 │   ├── routing/
 │   │   ├── network_design.py          # Ruta actual frente a ruta nueva y pares críticos
-│   │   └── metricas.py                # Excentricidad, diámetro, radio, centro y periferia
+│   │   ├── metricas.py                # Excentricidad, diámetro, radio, centro, periferia y media
+│   │   ├── robustez.py                # Puntos de corte, puentes, intermediación y cierres
+│   │   └── escenarios.py              # Troncales propuestas y comparación antes/después
 │   ├── api/
 │   │   ├── main.py                    # Aplicación FastAPI; monta el frontend
 │   │   ├── routes.py                  # Endpoints /api/...
@@ -165,6 +188,9 @@ IntegraBog/
 │       ├── diagnostico_caso_limite.py
 │       ├── validar_pares_criticos.py
 │       ├── metricas_red.py
+│       ├── robustez_red.py
+│       ├── proponer_troncales.py
+│       ├── comparar_escenarios.py
 │       └── run_diagnostico.py
 ├── tests/                             # Pruebas automatizadas (pytest)
 ├── diagnostico_sentido_ruta.geojson   # Salida por defecto de diagnostico_sentido
@@ -224,7 +250,10 @@ uv run python -m integrabog.scripts.<nombre> [opciones]
 | `diagnostico_sentido` | Audita sentidos, rotondas, calzadas separadas, giros prohibidos y factibilidad, en la malla y sobre una ruta concreta | `diagnostico_sentido_ruta.geojson` |
 | `diagnostico_caso_limite` | Reconstruye tramo por tramo el caso Escuela Militar ↔ San Martín (306 m en línea recta) | Consola |
 | `validar_pares_criticos` | Ejecuta la búsqueda automática de pares críticos sobre la red real | Consola |
-| `metricas_red` | Calcula excentricidad, diámetro, radio, centro y periferia de la red troncal | `resultados/metricas/` |
+| `metricas_red` | Calcula excentricidad, diámetro, radio, centro, periferia y distancia media de la red troncal | `resultados/metricas/` |
+| `robustez_red` | Calcula la estructura de la red, la intermediación, la eficiencia y el efecto de cerrar cada estación y cada enlace | `resultados/robustez/` |
+| `proponer_troncales` | Calcula por la malla vial las troncales propuestas (los pares críticos o pares dados) | `resultados/escenarios/propuestas.geojson` |
+| `comparar_escenarios` | Compara las métricas de la red de hoy con las de la red con las troncales propuestas | `resultados/escenarios/` |
 | `run_diagnostico` | Diagnóstico rápido del grafo macro: tamaño, conexidad y nodos aislados | Consola |
 
 #### Diagnóstico de sentidos: `diagnostico_sentido`
@@ -261,7 +290,49 @@ uv run python -m integrabog.scripts.metricas_red --transbordo 0 --salida resulta
 
 La segunda línea calcula las mismas métricas sin costo de transbordo, lo que permite aislar su efecto sobre la estructura de la red.
 
+#### Robustez de la red: `robustez_red`
+
+```bash
+uv run python -m integrabog.scripts.robustez_red
+uv run python -m integrabog.scripts.robustez_red --criterio distancia --top 15
+```
+
+| Opción | Valor por defecto | Descripción |
+|---|---|---|
+| `--criterio` | `tiempo` | Pesos de la intermediación, la eficiencia y los cierres: `tiempo`, `distancia` o `tramos` |
+| `--transbordo` | 5 | Minutos por transbordo en cada arista de cruce |
+| `--top` | 10 | Estaciones y enlaces que se listan en cada tabla |
+| `--salida` | `resultados/robustez` | Carpeta de salida; se crea si no existe |
+
+#### Antes y después: `proponer_troncales` y `comparar_escenarios`
+
+La comparación se hace en dos pasos. El primero calcula la ruta de cada troncal propuesta por la malla vial, con las mismas reglas de la aplicación, y las guarda en un GeoJSON; necesita la malla completa y tarda unos minutos. El segundo compara las dos redes usando solo el grafo macro, en segundos, así que se puede repetir con otros parámetros sin volver a calcular las rutas.
+
+```bash
+uv run python -m integrabog.scripts.proponer_troncales --top 5
+uv run python -m integrabog.scripts.proponer_troncales --par "Escuela Militar" "San Martín" --par "Nariño" "Ciudad Jardín"
+uv run python -m integrabog.scripts.comparar_escenarios
+uv run python -m integrabog.scripts.comparar_escenarios --transbordo-propuestas 5 0 --salida resultados/escenarios/final
+```
+
+| Script | Opción | Valor por defecto | Descripción |
+|---|---|---|---|
+| `proponer_troncales` | `--top` | 5 | Pares críticos que se proponen si no se da `--par` |
+| | `--par ORIGEN DESTINO` | — | Un par de estaciones, con los mismos nombres que acepta la aplicación; se puede repetir |
+| | `--salida` | `resultados/escenarios/propuestas.geojson` | GeoJSON de propuestas |
+| `comparar_escenarios` | `--propuestas` | `resultados/escenarios/propuestas.geojson` | Propuestas que se agregan a la red |
+| | `--transbordo` | 5 | Minutos por transbordo en los cruces entre troncales; también en las propuestas, salvo que se dé `--transbordo-propuestas` |
+| | `--transbordo-propuestas MIN …` | el de `--transbordo` | Minutos de transbordo al entrar a una propuesta, sin tocar los cruces de hoy. Con 0, la propuesta se opera como ruta continua (cota superior). Con varios valores, por ejemplo `5 0`, compara las variantes lado a lado |
+| | `--top` | 10 | Estaciones que se listan en cada tabla |
+| | `--salida` | `resultados/escenarios` | Carpeta de salida |
+
+Con varios valores de `--transbordo-propuestas`, cada variante deja su informe completo en una subcarpeta (`conexion_fisica/`, `ruta_continua/`), y la carpeta de salida recibe la comparación lado a lado: `comparacion_transbordo.md`, con los indicadores antes y en cada variante, el viaje entre las dos puntas de cada propuesta y las estaciones que más acortan su tiempo medio de viaje, y `comparacion_transbordo.csv`, con una fila por estación.
+
+El archivo de propuestas también se puede editar a mano o armar con otra herramienta, siempre que cada línea conserve las propiedades `origen`, `destino`, `largo_m`, `tiempo_min` y `tramos`. Las propuestas que no se pueden agregar (una estación que no existe, dos estaciones que ya están unidas o un par repetido) se omiten y quedan listadas en el informe con su motivo.
+
 ## Módulo analítico: matemáticas discretas
+
+El módulo tiene tres partes: métricas de distancia (`routing/metricas.py`), robustez (`routing/robustez.py`) y comparación antes/después con las troncales propuestas (`routing/escenarios.py`). Las tres trabajan sobre el mismo grafo de la red troncal y con la misma función de costo de la aplicación.
 
 `routing/metricas.py` estudia la red troncal como un grafo dirigido ponderado G = (V, E), en el que V son las 153 estaciones y E las 368 conexiones de tramo, costura y cruce. Para un criterio de peso dado, d(u, v) es el largo del camino más corto de u a v, y a partir de esas distancias se calculan:
 
@@ -272,6 +343,7 @@ La segunda línea calcula las mismas métricas sin costo de transbordo, lo que p
 | Radio | r = mín { e(v) : v ∈ V } | La menor excentricidad de la red |
 | Centro | { v ∈ V : e(v) = r } | Estaciones que minimizan la distancia a la estación más lejana |
 | Periferia | { v ∈ V : e(v) = D } | Estaciones que son extremo de un viaje de largo D |
+| Distancia media | promedio de d(u, v) sobre los pares ordenados de estaciones distintas | El viaje típico de la red, frente al peor, que es D |
 
 ### Criterios de peso
 
@@ -300,21 +372,55 @@ Red de 153 estaciones y 368 aristas dirigidas; ejecución del 7 de noviembre de 
 
 Por tiempo, D/r ≈ 2: la red queda prácticamente en el caso de igualdad de la cota D ≤ 2r, y AV. ElDorado está casi a mitad de camino entre los dos extremos. Tibanica - Primavera, una de las estaciones nuevas de la Av. Ciudad de Cali, es hoy un extremo de la red tanto por tiempo como por distancia.
 
-### Archivos de salida
+### Archivos de salida de las métricas
 
 - `resultados/metricas/metricas_red.geojson`: el camino del diámetro de cada criterio, dibujado por el trazado oficial (rojo: tiempo; azul: distancia; verde: tramos), y cada estación con su excentricidad, su estación más lejana y su papel en la red (centro o periferia). Se abre en [geojson.io](https://geojson.io) o en QGIS.
-- `resultados/metricas/excentricidades.csv`: una fila por estación, con su excentricidad y su estación más lejana en cada criterio. Está en UTF-8 con BOM para que Excel lea bien las tildes.
+- `resultados/metricas/excentricidades.csv`: una fila por estación, con su excentricidad, su estación más lejana y su distancia media a las demás en cada criterio. Está en UTF-8 con BOM para que Excel lea bien las tildes.
 - `resultados/metricas/metricas_red.md`: definiciones, resumen, caminos del diámetro y tabla de excentricidades, con coma decimal, listos para el informe.
 
-### Próximamente: robustez de la red
+### Robustez de la red
 
-La siguiente etapa del módulo estudiará la robustez de la red troncal sobre el mismo grafo:
+`routing/robustez.py` mide cuánto depende la conectividad de la red de una sola estación o de un solo enlace, y cuánto se alargan los viajes cuando uno de ellos se cierra. Trabaja en dos niveles.
 
-- **Puntos de corte y puentes:** estaciones y conexiones cuya falla desconecta la red.
-- **Número ciclomático** μ = m − n + c, con m enlaces, n estaciones y c componentes: cuántos ciclos independientes tiene la red, es decir, cuántas alternativas de recorrido ofrece.
-- **Centralidad de intermediación:** estaciones por las que pasa la mayor parte de los caminos más cortos.
-- **Impacto de cierres:** variación del diámetro, el radio y el tiempo medio de viaje al retirar una estación o un tramo.
-- **Evaluación de propuestas:** efecto de cada troncal nueva sobre esas mismas métricas, antes y después, incluidos los puentes que dejan de serlo al cerrar ciclos.
+**Estructura.** Sobre el grafo no dirigido de los enlaces, con n estaciones, m enlaces y c componentes conexas:
+
+| Concepto | Definición |
+|---|---|
+| Número ciclomático | μ = m − n + c: ciclos independientes, es decir, alternativas de recorrido (μ = 0 en un árbol) |
+| Punto de corte | Estación cuyo cierre desconecta la red |
+| Puente | Enlace cuyo cierre desconecta la red |
+| Bloque | Componente biconexa: un pedazo de la red que el cierre de una sola estación no alcanza a partir |
+| Conectividad κ y λ | Estaciones y enlaces que hay que cerrar, como mínimo, para desconectar la red; se verifica la desigualdad de Whitney κ ≤ λ ≤ δ, con δ el grado mínimo |
+| Pares que dependen de un solo elemento | Pares de estaciones que se separan al cerrar una sola estación, distinta de ellas, o un solo enlace |
+
+Los pares que dependen de una sola estación salen de los bloques, sin cerrar nada: dos bloques comparten a lo sumo una estación, así que cada par está a lo sumo en un bloque común, y los pares protegidos son exactamente Σ C(\|B\|, 2) sobre los bloques B. Los que dependen de un solo enlace son los que quedan en componentes distintas al quitar todos los puentes. Las pruebas comparan ambos conteos con la fuerza bruta (cerrar cada estación y cada enlace) en grafos al azar.
+
+**Desempeño.** Con los pesos del criterio elegido, por defecto el tiempo de viaje con transbordo:
+
+- **Intermediación:** la fracción de los caminos más cortos entre otros pares de estaciones que pasa por cada estación. Las más altas son los cuellos de botella de la red.
+- **Eficiencia global:** E, el promedio de 1 / d(u, v) sobre los pares ordenados de estaciones distintas (Latora y Marchiori, 2001). A diferencia del tiempo medio, sigue definida cuando un cierre deja pares sin camino (1 / ∞ = 0); su inverso es la media armónica de los viajes.
+- **Cierres:** para cada estación y cada enlace, los pares que quedan sin camino, los que siguen conectados pero con un viaje más largo (y cuánto más, en promedio) y la pérdida de eficiencia. El cierre de una estación se mide sobre los viajes que no empiezan ni terminan en ella.
+
+El análisis de cierres necesita un cálculo de todos los pares por cada estación y por cada enlace, unos 330 en total. Se hace con `scipy.sparse.csgraph.dijkstra`, que lo resuelve en menos de un segundo; las pruebas verifican que las distancias coinciden con las de NetworkX.
+
+### Comparación antes y después
+
+`routing/escenarios.py` agrega las troncales propuestas al grafo macro y evalúa las dos redes con las mismas métricas y sobre las mismas estaciones:
+
+- Cada propuesta entra como una arista nueva entre sus dos estaciones, en los dos sentidos, con el largo y el tiempo de su ruta por la malla vial. Sus paradas intermedias no se agregan como estaciones: tendrían grado 2, así que no cambiarían ninguna distancia entre las estaciones existentes, y V es el mismo antes y después.
+- Por defecto, la arista nueva cobra el mismo transbordo de 5 minutos que un cruce entre troncales. Es la **conexión física**: se construye el enlace y el pasajero cambia de servicio para usarlo. Si no lo cobrara, cambiar de troncal por una propuesta saldría gratis y por un cruce existente costaría 5 minutos, y la comparación favorecería a la red propuesta solo por la forma de contar los transbordos. En consecuencia, una propuesta que en la aplicación ahorra menos de 5 minutos no acorta ni siquiera el viaje entre sus dos estaciones.
+- Como cota superior, `--transbordo-propuestas 0` opera la propuesta como **ruta continua**: un servicio que sigue de una troncal a la otra sin transbordo. El transbordo propio viaja en la arista de la propuesta, y los cruces de la red de hoy siguen cobrando 5 minutos, así que el antes es el mismo en las dos variantes. También son iguales la estructura (μ, puntos de corte, puentes, bloques y pares que dependen de un solo elemento) y las distancias por largo y por tramos; lo que cambia son los indicadores de tiempo.
+- Agregar aristas no puede alargar ningún camino: el diámetro, el radio, la media y cada excentricidad bajan o se quedan igual, y no puede aparecer un punto de corte ni un puente nuevo. El informe muestra qué puentes y puntos de corte desaparecen, qué estaciones acortan más su tiempo medio de viaje y el aporte de cada propuesta agregada sola.
+
+### Archivos de salida de robustez y escenarios
+
+- `resultados/robustez/robustez_red.md`: estructura, estaciones de mayor intermediación y cierres más dañinos, con coma decimal.
+- `resultados/robustez/estaciones.csv` y `enlaces.csv`: una fila por estación y por enlace, ordenadas de la más a la menos crítica.
+- `resultados/robustez/robustez_red.geojson`: los enlaces dibujados por el trazado (en rojo, los puentes) y las estaciones (en rojo, los puntos de corte; en ámbar, las de mayor intermediación).
+- `resultados/escenarios/antes_despues.md`: el escenario, la tabla antes/después, el aporte de cada propuesta y los cambios en la estructura.
+- `resultados/escenarios/antes_despues.csv`: excentricidad, tiempo medio de viaje e intermediación de cada estación, antes y después.
+- `resultados/escenarios/antes_despues.geojson`: la red de hoy, las troncales propuestas (verde), los enlaces que dejan de ser puentes (azul) y las estaciones, coloreadas según cuánto baja su tiempo medio de viaje.
+- `comparacion_transbordo.md` y `comparacion_transbordo.csv`, si se dan varios valores de `--transbordo-propuestas`: las variantes lado a lado, y en cada subcarpeta los tres archivos anteriores de esa variante.
 
 ## Parámetros del modelo
 
@@ -364,6 +470,8 @@ Las pruebas combinan casos construidos a mano, con respuesta conocida, y verific
 | Factibilidad para una troncal y enganche de estaciones | `test_aptitud_troncal.py`, `test_acceso_estaciones.py` |
 | Grafo macro: costura, cruces y geometría de las aristas | `test_macro.py`, `test_costura_macro.py`, `test_cruces_troncales.py`, `test_geometria_troncal.py` |
 | Métricas de la red, incluida la comparación con NetworkX | `test_metricas.py` |
+| Robustez: estructura contra la fuerza bruta, cierres y red real | `test_robustez.py` |
+| Escenarios: propuestas, GeoJSON y comparación antes/después | `test_escenarios.py` |
 | Detectores del diagnóstico de sentidos | `test_diagnostico_sentido.py` |
 | API, configuración y carga de datos | `test_api.py`, `test_config.py`, `test_loader.py` |
 
@@ -397,6 +505,8 @@ Convenciones del código:
 - Las reglas de Overture que dependen del horario, del propósito del viaje o del tipo de usuario no se aplican: se modela el tránsito general a cualquier hora.
 - Las costuras y los cruces entre troncales se infieren de la geometría; las conexiones dudosas se revisan a mano y se registran en `config.py`.
 - Los sentidos que faltan en Overture se completan con reglas geométricas, y lo que esas reglas no resuelven se corrige a mano (`SENTIDOS_FORZADOS`).
+- Las troncales propuestas entran como conexiones directas entre dos estaciones existentes: sus paradas intermedias no son estaciones del grafo, y dos propuestas que se cruzan no se conectan entre sí.
+- Los cierres se analizan de a uno: no se modelan fallas simultáneas.
 - La factibilidad física depende de lo que registra Overture (clase vial, superficie y restricciones por dimensión o peso). El ancho de calzada y los radios de giro solo entran a través de la lista manual `VIAS_NO_APTAS_TRONCAL`.
 
 ## Licencia

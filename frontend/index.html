@@ -3,56 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IntegraBog · Sugerencia de nuevas troncales</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<meta name="theme-color" content="#04060b">
+<title>IntegraBog · Centro de mando de la red troncal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="panel">
-    <h1>IntegraBog</h1>
-    <p class="subtitulo">Diagnóstico de la red de TransMilenio y sugerencia de nuevas troncales</p>
+  <div id="mapa" role="region" aria-label="Mapa de la red troncal de TransMilenio"></div>
+  <div class="velo" aria-hidden="true"></div>
 
-    <div class="bloque">
-      <h2>Sugerir troncal entre dos estaciones</h2>
-      <label for="origen">Estación origen</label>
-      <select id="origen"></select>
-      <label for="destino">Estación destino</label>
-      <select id="destino"></select>
-      <button id="btn-sugerir">Calcular sugerencia</button>
+  <aside id="panel" class="vidrio" aria-label="Controles">
+    <div class="panel-scroll">
+      <header class="marca">
+        <svg class="marca-logo" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="marca-degradado" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#2de2ff"/>
+              <stop offset="1" stop-color="#b6ff3b"/>
+            </linearGradient>
+          </defs>
+          <rect x="1" y="1" width="30" height="30" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)"/>
+          <path d="M9 22 L16 9.5 L23 20 Z" fill="none" stroke="url(#marca-degradado)" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="9" cy="22" r="2.6" fill="#2de2ff"/>
+          <circle cx="16" cy="9.5" r="2.6" fill="#a78bfa"/>
+          <circle cx="23" cy="20" r="2.6" fill="#b6ff3b"/>
+        </svg>
+        <div>
+          <h1>IntegraBog</h1>
+          <p class="subtitulo">Diagnóstico de la red de TransMilenio y sugerencia de nuevas troncales</p>
+        </div>
+      </header>
+
+      <section class="bloque">
+        <h2><span class="bloque-indice">01</span>Sugerir troncal entre dos estaciones</h2>
+        <label for="origen"><span class="punto-guia punto-origen" aria-hidden="true"></span>Estación origen</label>
+        <div class="campo"><select id="origen"></select></div>
+        <label for="destino"><span class="punto-guia punto-destino" aria-hidden="true"></span>Estación destino</label>
+        <div class="campo"><select id="destino"></select></div>
+        <p class="ayuda ayuda-mapa">También puedes elegirlas con un clic en el mapa: primero el origen, luego el destino.</p>
+        <button id="btn-sugerir" class="boton boton-primario" type="button">
+          <svg class="boton-icono" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="5" cy="18" r="2.2"/><circle cx="19" cy="6" r="2.2"/>
+            <path d="M7 18h6a4 4 0 0 0 0-8h-2a4 4 0 0 1 0-8h6"/>
+          </svg>
+          <span>Calcular sugerencia</span>
+        </button>
+      </section>
+
+      <section class="bloque">
+        <h2><span class="bloque-indice">02</span>Pares críticos automáticos</h2>
+        <p class="ayuda">Encuentra las estaciones que están cerca en línea recta pero lejos por la red troncal.</p>
+        <label for="top-n">Cuántos pares (top N)</label>
+        <div class="campo campo-numero"><input type="number" id="top-n" value="5" min="1" max="20"></div>
+        <button id="btn-pares" class="boton boton-secundario" type="button">
+          <svg class="boton-icono" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12 L19 5"/>
+          </svg>
+          <span>Buscar pares críticos</span>
+        </button>
+      </section>
+
+      <section class="bloque">
+        <h2><span class="bloque-indice">03</span>Capas del mapa</h2>
+        <div class="leyenda">
+          <span class="muestra muestra-trazado"></span> Trazado oficial de las troncales
+        </div>
+        <label class="interruptor">
+          <input type="checkbox" id="ver-conexiones">
+          <span class="interruptor-pista" aria-hidden="true"><span class="interruptor-perilla"></span></span>
+          <span class="muestra muestra-modelo"></span>
+          <span>Conexiones del modelo <span id="n-conexiones"></span></span>
+        </label>
+        <p class="ayuda">Costuras y cruces entre troncales que el modelo infiere del trazado para poder enrutar. No son troncales: están ocultas por defecto.</p>
+        <div class="leyenda leyenda-resultados">
+          <span><span class="muestra muestra-actual"></span> Ruta actual</span>
+          <span><span class="muestra muestra-nueva"></span> Ruta propuesta</span>
+        </div>
+      </section>
     </div>
+  </aside>
 
-    <div class="bloque">
-      <h2>Pares críticos automáticos</h2>
-      <p class="ayuda">Encuentra las estaciones que están cerca en línea recta pero lejos por la red troncal.</p>
-      <label for="top-n">Cuántos pares (top N)</label>
-      <input type="number" id="top-n" value="5" min="1" max="20">
-      <button id="btn-pares">Buscar pares críticos</button>
-    </div>
-
-    <div class="bloque">
-      <h2>Capas del mapa</h2>
-      <div class="leyenda">
-        <span class="muestra muestra-trazado"></span> Trazado oficial de las troncales
+  <div class="columna-derecha">
+    <section class="hud vidrio" aria-label="Telemetría de la red">
+      <h2><span class="led" aria-hidden="true"></span>Telemetría de la red</h2>
+      <div class="hud-rejilla">
+        <div class="hud-dato"><span class="hud-valor" id="hud-estaciones">—</span><span class="hud-etiqueta">Estaciones</span></div>
+        <div class="hud-dato"><span class="hud-valor" id="hud-troncales">—</span><span class="hud-etiqueta">Troncales</span></div>
+        <div class="hud-dato"><span class="hud-valor" id="hud-conexiones">—</span><span class="hud-etiqueta">Conexiones inferidas</span></div>
       </div>
-      <label class="interruptor">
-        <input type="checkbox" id="ver-conexiones">
-        <span class="muestra muestra-modelo"></span>
-        Conexiones del modelo <span id="n-conexiones"></span>
-      </label>
-      <p class="ayuda">Costuras y cruces entre troncales que el modelo infiere del trazado para poder enrutar. No son troncales: están ocultas por defecto.</p>
-    </div>
+      <h3 class="hud-sub">Grafo multicapa</h3>
+      <div class="hud-rejilla">
+        <div class="hud-dato"><span class="hud-valor" id="hud-nodos">—</span><span class="hud-etiqueta">Nodos</span></div>
+        <div class="hud-dato"><span class="hud-valor" id="hud-aristas">—</span><span class="hud-etiqueta">Aristas</span></div>
+        <div class="hud-dato"><span class="hud-valor" id="hud-componentes">—</span><span class="hud-etiqueta">Componentes</span></div>
+      </div>
+      <p class="hud-nota" id="hud-nota">Leyendo el grafo...</p>
+    </section>
 
-    <div id="resultado" class="bloque oculto">
+    <section id="resultado" class="vidrio panel-resultado oculto" aria-live="polite">
       <h2>Resultado</h2>
       <div id="resultado-contenido"></div>
-    </div>
-
-    <div id="estado" class="estado"></div>
+    </section>
   </div>
 
-  <div id="mapa"></div>
+  <div id="estado" class="estado" role="status" aria-live="polite"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

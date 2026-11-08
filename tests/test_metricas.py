@@ -153,6 +153,22 @@ def test_igual_que_networkx_en_una_cuadricula_con_pesos_distintos():
         assert set(m.periferia) == {v for v in G if excentricidad[v] == pytest.approx(m.diametro)}
 
 
+def test_la_media_es_el_viaje_tipico():
+    """En la línea 1 - 2 - 3 - 4 - 5, por tramos: los 10 pares suman 1·4 + 2·3 + 3·2 + 4·1 = 20,
+     así que la media es 2. Desde la punta, (1 + 2 + 3 + 4) / 4 = 2,5; desde el medio, 1,5."""
+    G = _red([(1, 2, 1000), (2, 3, 1000), (3, 4, 1000), (4, 5, 1000)])
+    m = metricas_red(G, "tramos")
+    assert m.media == pytest.approx(2.0)
+    assert (m.media_desde[1], m.media_desde[3]) == (pytest.approx(2.5), pytest.approx(1.5))
+
+
+def test_la_media_es_la_de_networkx():
+    G = _cuadricula()
+    for criterio in CRITERIOS:
+        w = peso(criterio)
+        assert metricas_red(G, criterio).media == pytest.approx(nx.average_shortest_path_length(G, weight=w))
+
+
 def test_los_empates_se_comparan_con_tolerancia():
     """Por distancia, (0, 0) y (0, 4) tienen la misma excentricidad: 3,661 km exactos (sumas de
      metros enteros). Pero sumando en otro orden, el punto flotante da 3,6610000000000005 y
