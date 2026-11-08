@@ -10,6 +10,12 @@ camino más corto de u a v según el criterio:
     radio           r    = mín { e(v) : v ∈ V }
     centro          { v ∈ V : e(v) = r }
     periferia       { v ∈ V : e(v) = D }
+    media           el promedio de d(u, v) sobre los pares ordenados (u, v), u ≠ v, con camino
+
+El diámetro es el peor viaje de la red y la media, el viaje típico: para
+comparar dos redes (antes y después de una troncal nueva, en
+routing/escenarios.py) hacen falta las dos, porque una conexión puede acortar
+muchos viajes sin tocar el par más alejado.
 
 El grafo macro hoy es simétrico (cada arista va en los dos sentidos), así
 que d(u, v) = d(v, u). Igual se calcula sobre el grafo dirigido, con la
@@ -23,7 +29,9 @@ Tres criterios para d(u, v):
     Es la medida principal: es lo que vive el usuario y lo que el modelo
     optimiza.
   - 'distancia' (km): el largo por el trazado oficial.
-  - 'tramos': cada arista cuenta 1. Es el diámetro topológico clásico.
+  - 'tramos': cada arista cuenta 1. Es el diámetro topológico clásico. Una
+    troncal propuesta (routing/escenarios.py) cuenta los tramos entre sus
+    paradas: es una línea con estaciones, no un salto.
 Sin el costo del transbordo, 'tiempo' sería 'distancia' dividida por la
 velocidad: el mismo par y el mismo camino. El transbordo es lo que separa
 las dos medidas. Con las 150 estaciones de la primera versión, el par más
@@ -43,13 +51,13 @@ import math
 import numbers
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import Any
 
 import networkx as nx
 from pyproj import Transformer
 
 from integrabog.config import CRS_METRICO, TRANSBORDO_MIN
-from integrabog.graph.cruces import TIPO_ARISTA_CRUCE
-from integrabog.routing.network_design import tiempo_troncal_min
+from integrabog.routing.network_design import implica_transbordo, tiempo_troncal_min
 
 CRITERIOS = ("tiempo", "distancia", "tramos")
 UNIDAD = {"tiempo": "min", "distancia": "km", "tramos": "tramos"}
@@ -68,7 +76,7 @@ def peso(criterio: str, transbordo_min: float = TRANSBORDO_MIN) -> Callable[[obj
     if criterio == "distancia":
         return lambda u, v, d: d["weight"] / 1000
     if criterio == "tramos":
-        return lambda u, v, d: 1
+        return lambda u, v, d: d.get("tramos", 1)
     raise ValueError(f"Criterio desconocido: {criterio!r} (opciones: {', '.join(CRITERIOS)})")
 
 
@@ -88,6 +96,8 @@ class MetricasRed:
     camino_diametro: tuple       # estaciones del camino más corto entre ese par
     pares_diametro: tuple        # todos los pares (u, v) con d(u, v) = D (puede haber empates)
     pares_sin_camino: int        # pares (u, v) con u != v sin camino de u a v
+    media: float                 # promedio de d(u, v) sobre los pares ordenados con camino
+    media_desde: dict            # estación -> promedio de d(v, u) hasta las estaciones a las que llega
 
     def pares_diametro_sin_orden(self) -> list[tuple]:
         """Los pares del diámetro sin repetir (u, v) y (v, u): en un grafo simétrico son el
@@ -100,7 +110,7 @@ class MetricasRed:
         return pares
 
 
-def _en_orden(G: nx.DiGraph) -> list:
+def en_orden(G: nx.DiGraph) -> list:
     """Las estaciones en orden de código (cod_nodo), para desempatar siempre igual. Los
     códigos son números (también los de numpy); cualquier otro id va después, como texto."""
     def clave(n):
@@ -117,10 +127,18 @@ def metricas_red(G: nx.DiGraph, criterio: str = "tiempo", transbordo_min: float 
     """
     funcion = peso(criterio, transbordo_min)
     tolerancia = TOLERANCIA[criterio]
-    estaciones = _en_orden(G)
-    excentricidad, mas_lejana, lejanas, caminos, sin_camino = {}, {}, {}, {}, 0
+    estaciones = en_orden(G)
+    excentricidad: dict[Any, float] = {}
+    mas_lejana: dict[Any, Any] = {}
+    lejanas: dict[Any, tuple] = {}
+    caminos: dict[Any, tuple] = {}
+    media_desde: dict[Any, float] = {}
+    sin_camino, suma, pares = 0, 0.0, 0
     for v in estaciones:
         largos, rutas = nx.single_source_dijkstra(G, v, weight=funcion)
+        alcanzadas = len(largos) - 1  # sin contar la estación misma (d(v, v) = 0 no suma)
+        media_desde[v] = sum(largos.values()) / alcanzadas if alcanzadas else 0.0
+        suma, pares = suma + sum(largos.values()), pares + alcanzadas
         faltan = len(G) - len(largos)
         if faltan:
             sin_camino += faltan
@@ -140,22 +158,24 @@ def metricas_red(G: nx.DiGraph, criterio: str = "tiempo", transbordo_min: float 
         centro=centro, periferia=periferia, par_diametro=(origen, mas_lejana[origen]),
         camino_diametro=caminos.get(origen, ()),
         pares_diametro=tuple((v, u) for v in periferia for u in lejanas[v]),
-        pares_sin_camino=sin_camino)
+        pares_sin_camino=sin_camino, media=suma / pares if pares else 0.0, media_desde=media_desde)
 
 
 def resumen_camino(G: nx.DiGraph, camino: Sequence, transbordo_min: float = TRANSBORDO_MIN) -> dict:
     """Las tres medidas de un mismo camino, más sus transbordos y las
-    troncales por las que pasa (en orden, sin repetir seguidas)."""
+    troncales por las que pasa (en orden, sin repetir seguidas). 'estaciones'
+    son las de la red por las que pasa: las paradas de una troncal propuesta
+    no son nodos del grafo, pero sus tramos sí cuentan en 'tramos'."""
     aristas = [G[u][v] for u, v in zip(camino[:-1], camino[1:])]
-    troncales = []
+    troncales: list[str] = []
     for v in camino:
         troncal = G.nodes[v].get("troncal")
         if troncal and (not troncales or troncales[-1] != troncal):
             troncales.append(troncal)
-    return {"tramos": len(aristas),
+    return {"tramos": sum(peso("tramos")(None, None, d) for d in aristas),
             "km": sum(d["weight"] for d in aristas) / 1000,
             "minutos": sum(peso("tiempo", transbordo_min)(None, None, d) for d in aristas),
-            "transbordos": sum(1 for d in aristas if d.get("tipo") == TIPO_ARISTA_CRUCE),
+            "transbordos": sum(1 for d in aristas if implica_transbordo(d)),
             "estaciones": len(camino),
             "troncales": troncales}
 
@@ -169,7 +189,7 @@ def punto_lonlat(G: nx.DiGraph, v) -> tuple[float, float]:
 def geometria_camino_lonlat(G: nx.DiGraph, camino: Sequence) -> list[tuple[float, float]]:
     """El camino dibujado por el trazado oficial: la forma de cada arista
     (graph/geometria_troncal.py, orientada de u a v), en lon/lat."""
-    puntos = []
+    puntos: list[tuple] = []
     for u, v in zip(camino[:-1], camino[1:]):
         geometria = G[u][v].get("geometry")
         coords = list(geometria.coords) if geometria is not None else [

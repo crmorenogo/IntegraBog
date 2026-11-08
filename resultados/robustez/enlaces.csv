@@ -1,0 +1,185 @@
+﻿cod_origen,origen,cod_destino,destino,tipo,largo_km,puente,pares_desconectados,pares_alargados,aumento_medio_min,perdida_eficiencia_pct
+9107,Hortúa,9108,Hospital,tramo,0.661,sí,2192,0,0.0,11.772
+7112,Comuneros,7113,Santa Isabel,tramo,0.451,sí,2192,0,0.0,11.068
+9106,Nariño,9107,Hortúa,tramo,0.639,sí,2070,0,0.0,10.876
+12002,CDS - Carrera 32,12007,Zona Industrial,tramo,0.701,sí,2192,0,0.0,10.801
+12001,Carrera 43 - Comapan,12007,Zona Industrial,tramo,0.409,sí,2070,0,0.0,10.047
+9105,Fucha,9106,Nariño,tramo,0.739,sí,1946,0,0.0,10.043
+7009,SENA,7113,Santa Isabel,costura,1.015,sí,2070,0,0.0,10.002
+9104,Restrepo,9105,Fucha,tramo,0.232,sí,1820,0,0.0,9.495
+7008,NQS - Calle 30 S,7009,SENA,tramo,0.885,sí,1946,0,0.0,9.185
+12000,Puente Aranda,12001,Carrera 43 - Comapan,tramo,0.478,sí,1946,0,0.0,9.159
+4106,Carrera 47,4107,Escuela Militar,tramo,0.455,sí,1562,0,0.0,9.126
+7007,Cl38A sur - CENTRO MAYOR,7008,NQS - Calle 30 S,tramo,0.631,sí,1820,0,0.0,8.486
+2205,Calle 106 - Maletas Explora,2300,Calle 100 - Marketmedios,tramo,1.014,sí,1820,0,0.0,8.469
+9103,Olaya,9104,Restrepo,tramo,0.734,sí,1692,0,0.0,8.45
+3013,Rionegro,3014,San Martín,tramo,0.51,sí,1820,0,0.0,8.364
+5107,Distrito Grafiti,12000,Puente Aranda,tramo,0.849,sí,1820,0,0.0,8.211
+4105,Carrera 53,4106,Carrera 47,tramo,0.65,sí,1430,0,0.0,8.182
+6106,Corferias,6107,Ciudad Universitaria - Lotería de Bogotá,tramo,0.835,sí,1430,0,0.0,7.918
+2204,Pepe Sierra Universidad UTEL,2205,Calle 106 - Maletas Explora,tramo,0.577,sí,1692,0,0.0,7.81
+7006,General Santander,7007,Cl38A sur - CENTRO MAYOR,tramo,0.719,sí,1692,0,0.0,7.764
+3012,Suba - Calle 95,3013,Rionegro,tramo,0.556,sí,1692,0,0.0,7.764
+9101,Quiroga,9103,Olaya,tramo,0.813,sí,1562,0,0.0,7.648
+5105,Pradera - Plaza Central,5107,Distrito Grafiti,tramo,0.791,sí,1692,0,0.0,7.417
+4104,AV. 68,4105,Carrera 53,tramo,0.603,sí,1296,0,0.0,7.343
+3011,Suba - Calle 100,3012,Suba - Calle 95,tramo,0.249,sí,1562,0,0.0,7.275
+6105,Quinta Paredes,6106,Corferias,tramo,0.506,sí,1296,0,0.0,7.165
+7005,Alquería,7006,General Santander,tramo,0.456,sí,1562,0,0.0,7.124
+2202,Calle 127,2204,Pepe Sierra Universidad UTEL,tramo,0.73,sí,1562,0,0.0,7.074
+9100,Calle 40 Sur,9101,Quiroga,tramo,0.643,sí,1430,0,0.0,6.953
+5103,Marsella,5105,Pradera - Plaza Central,tramo,1.282,sí,1562,0,0.0,6.649
+4103,Ferias,4104,AV. 68,tramo,0.679,sí,1160,0,0.0,6.532
+2201,Prado,2202,Calle 127,tramo,1.112,sí,1430,0,0.0,6.357
+3010,Puentelargo,3011,Suba - Calle 100,tramo,0.816,sí,1430,0,0.0,6.34
+7004,Venecia,7005,Alquería,tramo,0.968,sí,1430,0,0.0,6.319
+6104,Gobernación,6105,Quinta Paredes,tramo,0.724,sí,1160,0,0.0,6.316
+9004,Santa Lucía,9100,Calle 40 Sur,tramo,0.819,sí,1296,0,0.0,6.233
+10005,Bicentenario,10010,San Bernardo,tramo,0.41,sí,882,0,0.0,6.139
+5102,AV. Américas - AV. Boyacá,5103,Marsella,tramo,0.453,sí,1430,0,0.0,6.138
+4102,AV. Boyacá,4103,Ferias,tramo,0.38,sí,1022,0,0.0,5.855
+2200,Alcalá – Colegio S. Tomás Dominicos,2201,Prado,tramo,0.74,sí,1296,0,0.0,5.807
+7003,Sevillana,7004,Venecia,tramo,0.51,sí,1296,0,0.0,5.715
+3009,Suba - Calle 116,3010,Puentelargo,tramo,0.713,sí,1296,0,0.0,5.659
+6103,CAN,6104,Gobernación,tramo,0.503,sí,1022,0,0.0,5.585
+5101,Mandalay,5102,AV. Américas - AV. Boyacá,tramo,0.789,sí,1296,0,0.0,5.436
+2105,Calle 142,2200,Alcalá – Colegio S. Tomás Dominicos,tramo,0.638,sí,1160,0,0.0,5.276
+10004,Policarpa,10010,San Bernardo,tramo,0.541,sí,740,0,0.0,5.049
+3007,Humedal Córdoba,3009,Suba - Calle 116,tramo,0.84,sí,1160,0,0.0,4.984
+4101,Minuto de Dios,4102,AV. Boyacá,tramo,0.689,sí,882,0,0.0,4.975
+7002,CC Paseo Villa del Río - Madelena,7003,Sevillana,tramo,1.071,sí,1160,0,0.0,4.958
+5100,Banderas,5101,Mandalay,tramo,0.498,sí,1160,0,0.0,4.845
+6102,Salitre - El Greco,6103,CAN,tramo,0.543,sí,882,0,0.0,4.776
+2104,Calle 146,2105,Calle 142,tramo,0.454,sí,1022,0,0.0,4.775
+9114,Calle 26 - Atrio,9115,Temporal Calle 34,tramo,0.405,no,0,3075,11.125,4.734
+9122,Calle 72 - Areandina,9123,Calle 76 - San Felipe,tramo,0.537,no,0,2737,10.974,4.43
+3006,Niza - Calle 127,3007,Humedal Córdoba,tramo,0.601,sí,1022,0,0.0,4.382
+7001,Perdomo,7002,CC Paseo Villa del Río - Madelena,tramo,0.9,sí,1022,0,0.0,4.349
+9115,Temporal Calle 34,9116,Temporal AV. 39,tramo,0.762,no,0,3033,10.677,4.324
+4100,Granja - Kr 77,4101,Minuto de Dios,tramo,0.518,sí,740,0,0.0,4.241
+9121,Temporal Flores – Areandina,9122,Calle 72 - Areandina,tramo,0.649,no,0,2777,10.575,4.177
+2103,Mazurén,2104,Calle 146,tramo,0.414,sí,882,0,0.0,4.175
+9111,Calle 19,9113,Temporal Calle 22,tramo,0.214,no,0,2965,8.955,4.166
+9116,Temporal AV. 39,9117,Calle 45 - American School Way,tramo,0.553,no,0,2991,10.369,4.151
+5005,Transversal 86,5100,Banderas,costura,0.8,sí,1022,0,0.0,4.11
+9120,Calle 63,9121,Temporal Flores – Areandina,tramo,0.492,no,0,2821,10.306,4.099
+9119,Temporal Calle 57,9120,Calle 63,tramo,0.38,no,0,2865,10.136,4.046
+9117,Calle 45 - American School Way,9118,Temporal Marly,tramo,0.541,no,0,2949,10.157,3.996
+10003,Ciudad Jardín - UAN,10004,Policarpa,tramo,0.627,sí,596,0,0.0,3.986
+6101,El Tiempo – Cámara de Comercio de Bogotá,6102,Salitre - El Greco,tramo,0.802,sí,740,0,0.0,3.917
+9118,Temporal Marly,9119,Temporal Calle 57,tramo,0.983,no,0,2907,10.04,3.833
+7000,Portal Sur - JFK Coop. Financiera,7001,Perdomo,tramo,0.497,sí,882,0,0.0,3.809
+9109,Tercer Milenio,9110,Temporal AV. Jiménez - Inter Eléctricas (Caracas),tramo,0.28,no,0,2427,9.272,3.692
+3005,Suba - AV. Boyacá,3006,Niza - Calle 127,tramo,1.066,sí,882,0,0.0,3.683
+4003,AV. Cali,4100,Granja - Kr 77,tramo,0.551,sí,596,0,0.0,3.457
+2102,Calle 161,2103,Mazurén,tramo,0.822,sí,740,0,0.0,3.415
+5002,Biblioteca Tintal,5005,Transversal 86,costura,1.223,sí,882,0,0.0,3.406
+9002,Consuelo,9003,Socorro,tramo,0.549,sí,596,0,0.0,3.197
+6100,Avenida Rojas - UNISALESIANA,6101,El Tiempo – Cámara de Comercio de Bogotá,tramo,0.641,sí,596,0,0.0,3.155
+3004,Gratamira,3005,Suba - AV. Boyacá,tramo,0.685,sí,740,0,0.0,3.11
+7000,Portal Sur - JFK Coop. Financiera,7010,Bosa,tramo,1.317,sí,740,0,0.0,3.086
+9113,Temporal Calle 22,9114,Calle 26 - Atrio,tramo,0.891,no,0,2680,7.873,3.038
+10002,AV. 1 Mayo,10003,Ciudad Jardín - UAN,tramo,0.631,sí,450,0,0.0,2.971
+2101,Toberin - Foundever,2102,Calle 161,tramo,0.479,sí,596,0,0.0,2.824
+5001,Patio Bonito,5002,Biblioteca Tintal,tramo,0.843,sí,740,0,0.0,2.816
+7107,Universidad Nacional,7108,AV. ElDorado,tramo,0.778,no,0,2525,7.382,2.721
+9108,Hospital,9109,Tercer Milenio,costura,0.433,no,0,1632,10.241,2.693
+4002,Carrera 90,4003,AV. Cali,tramo,0.642,sí,450,0,0.0,2.651
+7010,Bosa,7506,La Despensa,costura,0.813,sí,596,0,0.0,2.553
+7109,CAD,7110,Paloquemao,tramo,0.933,no,0,2491,6.291,2.54
+2303,Calle 85,2304,Héroes - Colmena Seguros,tramo,0.468,no,0,1631,7.187,2.525
+9001,Molinos,9002,Consuelo,tramo,0.404,sí,450,0,0.0,2.459
+3003,21 Ángeles,3004,Gratamira,tramo,1.306,sí,596,0,0.0,2.448
+7106,Campín - UAN,7107,Universidad Nacional,tramo,0.918,no,0,2483,6.759,2.403
+9110,Temporal AV. Jiménez - Inter Eléctricas (Caracas),9111,Calle 19,tramo,1.045,no,0,2009,7.498,2.339
+6002,Normandía,6100,Avenida Rojas - UNISALESIANA,tramo,0.928,sí,450,0,0.0,2.338
+7105,Movistar Arena,7106,Campín - UAN,tramo,0.493,no,0,2441,6.349,2.288
+7200,Tygua - San José,7201,Guatoque - Veraguas,tramo,0.814,no,0,1176,7.851,2.245
+2302,Virrey,2303,Calle 85,tramo,0.414,no,0,1509,6.997,2.18
+5000,Portal Américas,5001,Patio Bonito,tramo,1.06,sí,596,0,0.0,2.178
+7102,Calle 75 - Zona M,7103,AV. Chile,tramo,0.555,no,0,2321,6.087,2.105
+2000,Portal Norte – Unicervantes,2101,Toberin - Foundever,tramo,0.945,sí,450,0,0.0,2.067
+7104,7 de Agosto,7105,Movistar Arena,tramo,0.828,no,0,2399,6.034,2.062
+7505,León XIII,7506,La Despensa,tramo,0.618,sí,450,0,0.0,2.014
+12003,Ricaurte - CL 13,12004,San Facon Carrera 22,tramo,0.49,no,0,1325,5.54,2.013
+7103,AV. Chile,7104,7 de Agosto,tramo,1.073,no,0,2357,5.923,1.967
+12004,San Facon Carrera 22,14001,De La Sabana,tramo,0.724,no,0,1357,5.391,1.96
+10001,Country Sur,10002,AV. 1 Mayo,tramo,0.821,sí,302,0,0.0,1.948
+3002,Suba - TV. 91,3003,21 Ángeles,tramo,0.863,sí,450,0,0.0,1.918
+4001,Quirigua,4002,Carrera 90,tramo,0.458,sí,302,0,0.0,1.91
+2300,Calle 100 - Marketmedios,2302,Virrey,tramo,0.892,no,0,1387,6.96,1.756
+4107,Escuela Militar,4108,Polo - FINCOMERCIO,tramo,0.855,no,0,816,7.637,1.651
+6108,Concejo de Bogotá,6109,Centro Memoria,tramo,0.754,no,0,762,7.97,1.603
+6001,Modelia,6002,Normandía,tramo,0.792,sí,302,0,0.0,1.593
+7110,Paloquemao,7111,Ricaurte - NQS,tramo,0.751,no,0,1557,5.802,1.59
+8001,Parque,8002,Biblioteca,tramo,0.599,sí,302,0,0.0,1.555
+12002,CDS - Carrera 32,12003,Ricaurte - CL 13,tramo,0.574,no,0,1139,5.288,1.552
+5000,Portal Américas,5009,Islandia,costura,2.895,sí,450,0,0.0,1.533
+7108,AV. ElDorado,7109,CAD,tramo,0.894,no,0,1944,4.966,1.526
+9001,Molinos,9005,Danubio,costura,1.224,sí,302,0,0.0,1.497
+2000,Portal Norte – Unicervantes,2001,Calle 187,tramo,0.921,sí,302,0,0.0,1.408
+3001,La Campiña,3002,Suba - TV. 91,tramo,0.596,sí,302,0,0.0,1.395
+7504,Terreros - Hospital Cardio Vascular,7505,León XIII,tramo,0.793,sí,302,0,0.0,1.379
+9003,Socorro,9004,Santa Lucía,tramo,0.776,no,0,725,12.8,1.261
+6107,Ciudad Universitaria - Lotería de Bogotá,6108,Concejo de Bogotá,tramo,0.649,no,0,583,7.362,1.196
+5009,Islandia,5010,Los Laureles,tramo,1.14,sí,302,0,0.0,1.085
+4000,Portal 80,4001,Quirigua,costura,0.382,sí,152,0,0.0,1.073
+14001,De La Sabana,14003,Temporal AV. Jiménez - Inter Eléctricas (Eje Ambiental),costura,0.424,no,0,365,4.782,1.024
+10000,Portal 20 de Julio,10001,Country Sur,tramo,0.864,sí,152,0,0.0,0.979
+10007,Las Nieves,10008,San Diego,tramo,0.62,no,0,295,6.748,0.924
+8000,Portal Tunal,8001,Parque,tramo,0.432,sí,152,0,0.0,0.899
+7112,Comuneros,7201,Guatoque - Veraguas,costura,0.769,no,0,799,4.009,0.886
+6000,Portal El Dorado – C.C. Nuestro Bogotá,6001,Modelia,tramo,0.869,sí,152,0,0.0,0.817
+10006,San Victorino,10007,Las Nieves,tramo,0.654,no,0,286,5.133,0.802
+2001,Calle 187,2502,Terminal,tramo,0.61,sí,152,0,0.0,0.779
+14003,Temporal AV. Jiménez - Inter Eléctricas (Eje Ambiental),14004,Museo del Oro,tramo,0.735,no,0,281,6.42,0.771
+3000,Portal Suba,3001,La Campiña,tramo,0.574,sí,152,0,0.0,0.769
+2304,Héroes - Colmena Seguros,9123,Calle 76 - San Felipe,costura,0.575,no,0,1209,2.42,0.766
+7503,San Mateo - CC Unisur,7504,Terreros - Hospital Cardio Vascular,tramo,0.697,sí,152,0,0.0,0.742
+9000,Portal Usme,9005,Danubio,tramo,1.679,sí,152,0,0.0,0.711
+7200,Tygua - San José,10005,Bicentenario,costura,1.278,no,0,735,2.938,0.675
+14004,Museo del Oro,14005,Las Aguas - Centro Colombo Americano,costura,0.639,no,0,219,6.891,0.629
+5010,Los Laureles,5011,Tibanica - Primavera,tramo,0.652,sí,152,0,0.0,0.627
+10005,Bicentenario,10006,San Victorino,costura,1.038,no,0,287,2.562,0.513
+7111,Ricaurte - NQS,7112,Comuneros,costura,1.244,no,0,1513,1.957,0.493
+4108,Polo - FINCOMERCIO,9123,Calle 76 - San Felipe,costura,0.942,no,0,1486,1.224,0.437
+10008,San Diego,10009,Museo Nacional,costura,0.546,no,0,75,9.033,0.421
+7101,La Castellana,7102,Calle 75 - Zona M,tramo,0.981,no,0,623,3.596,0.404
+6109,Centro Memoria,9114,Calle 26 - Atrio,cruce,0.841,no,0,435,3.02,0.323
+3014,San Martín,4107,Escuela Militar,cruce,0.424,no,0,980,1.582,0.32
+2304,Héroes - Colmena Seguros,4108,Polo - FINCOMERCIO,costura,0.936,no,0,542,1.249,0.306
+4107,Escuela Militar,7102,Calle 75 - Zona M,cruce,0.909,no,0,1494,1.482,0.268
+7111,Ricaurte - NQS,7201,Guatoque - Veraguas,costura,1.33,no,0,429,1.522,0.258
+6109,Centro Memoria,6111,Universidades – CityU,tramo,2.216,no,0,133,5.55,0.234
+2300,Calle 100 - Marketmedios,7101,La Castellana,cruce,1.299,no,0,561,2.681,0.197
+7200,Tygua - San José,9109,Tercer Milenio,cruce,0.694,no,0,755,1.119,0.194
+8002,Biblioteca,9004,Santa Lucía,cruce,0.813,no,0,435,2.624,0.156
+6111,Universidades – CityU,14005,Las Aguas - Centro Colombo Americano,cruce,0.259,no,0,95,4.047,0.155
+7200,Tygua - San José,10006,San Victorino,costura,1.774,no,0,240,1.153,0.143
+3014,San Martín,4108,Polo - FINCOMERCIO,cruce,0.908,no,0,966,0.878,0.142
+7110,Paloquemao,12002,CDS - Carrera 32,cruce,0.716,no,0,833,1.062,0.129
+10006,San Victorino,14003,Temporal AV. Jiménez - Inter Eléctricas (Eje Ambiental),cruce,0.435,no,0,227,1.335,0.124
+7200,Tygua - San José,9108,Hospital,cruce,0.821,no,0,680,0.714,0.121
+6109,Centro Memoria,10008,San Diego,cruce,1.272,no,0,193,1.85,0.103
+7111,Ricaurte - NQS,12002,CDS - Carrera 32,cruce,0.678,no,0,340,1.204,0.094
+6108,Concejo de Bogotá,7108,AV. ElDorado,cruce,0.512,no,0,97,1.93,0.089
+9111,Calle 19,14003,Temporal AV. Jiménez - Inter Eléctricas (Eje Ambiental),cruce,0.697,no,0,284,1.195,0.086
+4108,Polo - FINCOMERCIO,7102,Calle 75 - Zona M,cruce,1.12,no,0,170,1.0,0.076
+7110,Paloquemao,12003,Ricaurte - CL 13,cruce,0.648,no,0,99,1.301,0.067
+6107,Ciudad Universitaria - Lotería de Bogotá,7109,CAD,cruce,1.031,no,0,451,0.725,0.067
+6108,Concejo de Bogotá,7109,CAD,cruce,0.686,no,0,102,1.649,0.064
+9111,Calle 19,14001,De La Sabana,cruce,0.872,no,0,668,0.508,0.062
+9110,Temporal AV. Jiménez - Inter Eléctricas (Caracas),14003,Temporal AV. Jiménez - Inter Eléctricas (Eje Ambiental),cruce,0.597,no,0,76,1.406,0.06
+7111,Ricaurte - NQS,12003,Ricaurte - CL 13,cruce,0.61,no,0,79,1.327,0.057
+9110,Temporal AV. Jiménez - Inter Eléctricas (Caracas),14001,De La Sabana,cruce,0.772,no,0,380,0.594,0.056
+6109,Centro Memoria,9113,Temporal Calle 22,cruce,1.421,no,0,287,0.741,0.055
+6107,Ciudad Universitaria - Lotería de Bogotá,7108,AV. ElDorado,cruce,0.857,no,0,528,0.523,0.05
+4107,Escuela Militar,7101,La Castellana,cruce,0.716,no,0,26,2.063,0.039
+10006,San Victorino,14004,Museo del Oro,cruce,0.602,no,0,54,0.903,0.036
+10007,Las Nieves,14003,Temporal AV. Jiménez - Inter Eléctricas (Eje Ambiental),cruce,0.787,no,0,123,0.55,0.031
+4108,Polo - FINCOMERCIO,7101,La Castellana,cruce,0.927,no,0,34,1.508,0.023
+6111,Universidades – CityU,10008,San Diego,cruce,1.258,no,0,29,1.737,0.023
+8002,Biblioteca,9003,Socorro,cruce,1.139,no,0,15,1.072,0.018
+6109,Centro Memoria,10009,Museo Nacional,cruce,1.503,no,0,76,0.751,0.015
+10007,Las Nieves,14004,Museo del Oro,cruce,0.954,no,0,6,0.72,0.008
+6111,Universidades – CityU,10009,Museo Nacional,cruce,1.491,no,0,1,0.748,0.002
